@@ -1,4 +1,4 @@
-package com.Joedobo.WUmod;
+package com.Joedobo27.WUmod;
 
 import javassist.bytecode.BadBytecode;
 import javassist.bytecode.CodeIterator;

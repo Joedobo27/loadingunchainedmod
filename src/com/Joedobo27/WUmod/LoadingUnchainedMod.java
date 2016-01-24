@@ -1,7 +1,6 @@
-package com.Joedobo.WUmod;
+package com.Joedobo27.WUmod;
 
-import com.wurmonline.server.items.ItemTemplate;
-import com.wurmonline.server.items.ItemTemplateFactory;
+import com.wurmonline.server.items.*;
 import javassist.*;
 import javassist.bytecode.*;
 import javassist.expr.ExprEditor;
@@ -35,6 +34,8 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     private boolean useMagicChestInCart = false;
     private boolean useForgeInCart = false;
     private boolean craftWithinCart = false;
+    private boolean loadAltar = false;
+    private boolean loadOther = false;
 
     private CodeAttribute moveToItemAttribute;
     private CodeIterator moveToItemIterator;
@@ -104,29 +105,51 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         boatInCart = Boolean.valueOf(properties.getProperty("boatInCart", Boolean.toString(boatInCart)));
         useBedInCart = Boolean.valueOf(properties.getProperty("useBedInCart", Boolean.toString(useBedInCart)));
         useMagicChestInCart = Boolean.valueOf(properties.getProperty("useMagicChestInCart", Boolean.toString(useMagicChestInCart)));
-        useForgeInCart = Boolean.valueOf(properties.getProperty("useMagicChestInCart", Boolean.toString(useMagicChestInCart)));
+        useForgeInCart = Boolean.valueOf(properties.getProperty("useForgeInCart", Boolean.toString(useForgeInCart)));
         craftWithinCart = Boolean.valueOf(properties.getProperty("craftWithinCart", Boolean.toString(craftWithinCart)));
+        loadAltar = Boolean.valueOf(properties.getProperty("loadAltar", Boolean.toString(loadAltar)));
+        loadOther = Boolean.valueOf(properties.getProperty("loadOther", Boolean.toString(loadOther)));
     }
 
     @Override
     public void onServerStarted() {
-        if (useBedInCart) {
+        if (useBedInCart || boatInCart || loadAltar || loadOther) {
             try {
-                Field fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
-                Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(
-                        ItemTemplateFactory.class, ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
-
+                Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                        ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
                 for (ItemTemplate template : fieldTemplates.values()) {
-                    Integer a = template.getTemplateId();
+                    Integer templateId = template.getTemplateId();
                     if (useBedInCart) {
-                        if (a == 484 || a == 890) {
+                        Field fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
+                        if (templateId == 484 || templateId == 890) {
                             if (template.isUseOnGroundOnly()) {
                                 ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
                             }
                         }
                     }
+                    if (boatInCart) {
+                        Field fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
+                        if (template.isFloating()){
+                            ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
+                        }
+                    }
+                    if (loadAltar){
+                        Field fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
+                        if (templateId == ItemList.altarWood || templateId == ItemList.altarGold || templateId == ItemList.altarSilver ||
+                                templateId == ItemList.altarStone){
+                            ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
+                        }
+
+                    }
+                    if (loadOther){
+                        Field fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
+                        if (templateId == ItemList.trashBin){
+                            ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
+                        }
+                    }
+
                 }
-            } catch (IllegalAccessException | NoSuchFieldException e) {
+            }catch(NoSuchFieldException | IllegalAccessException e){
                 logger.log(Level.WARNING, e.toString());
             }
         }
