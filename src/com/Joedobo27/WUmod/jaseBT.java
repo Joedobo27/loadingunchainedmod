@@ -1,105 +1,21 @@
 package com.Joedobo27.WUmod;
 
-import javassist.bytecode.*;
+import javassist.bytecode.BadBytecode;
+import javassist.bytecode.CodeIterator;
+import javassist.bytecode.Mnemonic;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
 
 @SuppressWarnings("unused")
 public class jaseBT {
-
-    private Logger logger = Logger.getLogger(this.getClass().getName());
-    private ArrayList<Integer> opCodeStructure;
-    private ArrayList<String > operandStructure;
-    private String opcodeOperand;
-
-
-    public void setOpcodeOperand() {
-        String s = "";
-        s = s.concat(String.format("%02X", this.opCodeStructure.get(0) & 0xff));
-        s = s.concat(this.operandStructure.get(0));
-        for (int i = 1; i < this.opCodeStructure.size(); i++) {
-            s = s.concat(",");
-            s = s.concat(String.format("%02X", this.opCodeStructure.get(i) & 0xff));
-            s = s.concat(this.operandStructure.get(i));
-        }
-        this.opcodeOperand = s;
-    }
-
-    public void setOperandStructure(ArrayList<String> operandStructure) {
-        this.operandStructure = operandStructure;
-    }
-
-    public void setOpCodeStructure(ArrayList<Integer> opCodeStructure) {
-        this.opCodeStructure = opCodeStructure;
-    }
-
-    public String getOpcodeOperand() {return this.opcodeOperand;}
-
-    public static String findConstantPoolReference(ConstPool cp, int const_type, String methodName, String methodDesc, String strMatch, String classMatch, String interfaceCount) {
-        String a;
-        String b;
-        String toReturn = null;
-        if (classMatch != null){
-            classMatch = classMatch.replaceAll("/",".");
-        }
-        if (strMatch != null){
-            strMatch = strMatch.replaceAll("/",".");
-        }
-        for (int i = 1; i < cp.getSize(); i++) {
-            try {
-                switch (const_type) {
-                    case ConstPool.CONST_InterfaceMethodref:
-                        a = cp.eqMember(methodName, methodDesc, i);
-                        b = cp.getClassInfo(cp.getInterfaceMethodrefClass(i));
-                        if (a != null && b != null && Objects.equals(b, classMatch)){
-                            toReturn = String.format("%04X", i & 0xffff);
-                            toReturn = toReturn.concat(interfaceCount);
-                        }
-                        break;
-                    case ConstPool.CONST_Methodref:
-                        //String c = cp.getMethodrefName(i);
-                        a = cp.eqMember(methodName, methodDesc, i);
-                        b = cp.getClassInfo(cp.getMethodrefClass(i));
-                        if (a != null && b != null && Objects.equals(b, classMatch)) {
-                            toReturn = String.format("%04X", i & 0xffff);
-                        }
-                        break;
-                    case ConstPool.CONST_String:
-                        a = cp.getStringInfo(i);
-                        if (a != null && Objects.equals(a, strMatch)) {
-                            toReturn = String.format("%04X", i & 0xffff);
-                        }
-                        break;
-                    case ConstPool.CONST_Fieldref:
-                        a = cp.eqMember(methodName, methodDesc, i);
-                        b = cp.getClassInfo(cp.getFieldrefClass(i));
-                        if (a != null && b != null && Objects.equals(b, classMatch)) {
-                            toReturn = String.format("%04X", i & 0xffff);
-                        }
-                        break;
-                    case ConstPool.CONST_Class:
-                        a = cp.getClassInfo(i);
-                        if (a != null && Objects.equals(a, strMatch)) {
-                            toReturn = String.format("%04X", i & 0xffff);
-                        }
-                }
-            } catch (ClassCastException e) {
-            }
-            if (toReturn != null) {
-                break;
-            }
-        }
-        if (toReturn == null) {
-            throw new NullPointerException();
-        }
-        return toReturn;
-    }
 
     /**
      * Break up a string which is a list of hexadecimal digits into a ArrayList of HashMap-str,int.

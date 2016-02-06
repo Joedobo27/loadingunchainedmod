@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
-Class-Path: server.jar common.jar javassist.jar modlauncher.jar
+Class-Path: jase5zByteCodeTools.jar modlauncher.jar common.jar server.
+ jar javassist.jar
 Main-Class: 
 
