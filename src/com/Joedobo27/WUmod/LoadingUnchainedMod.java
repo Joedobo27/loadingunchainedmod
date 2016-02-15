@@ -931,8 +931,6 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 setActionDB(cfDomainItemBehaviour,
                         "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;SF)Z",
                         "action");
-                jaseBT.byteCodePrint(getActionDBIterator(),"action",
-                        "C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Wurm Unlimited Dedicated Server\\byte code prints");
 
                 //<editor-fold desc="Changes">
                 /*
