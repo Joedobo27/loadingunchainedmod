@@ -39,6 +39,8 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     private boolean useAltarInCart = false;
     private boolean loadOther = false;
 
+    private Field EMPTY_FIELD;
+
     private CodeAttribute moveToItemAttribute;
     private CodeIterator moveToItemIterator;
     private MethodInfo moveToItemMInfo;
@@ -126,115 +128,21 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
 
     @Override
     public void onServerStarted() {
-        if (useBedInCart || boatInCart || loadAltar || loadOther || craftWithinCart) {
-            Map<Integer, ItemTemplate> fieldTemplates = null;
-            try {
-                fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
-                        ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                e.printStackTrace();
-            }
-            int bedCnt = 0;
-            int boatInCartCnt = 0;
-            int altarCnt = 0;
-            int otherCnt = 0;
-            int craftWithinCartCnt = 0;
-            for (ItemTemplate template : fieldTemplates.values()) {
-                Integer templateId = template.getTemplateId();
-                if (useBedInCart) {
-                    Field fieldUseOnGroundOnly = null;
-                    try {
-                        fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
-                    } catch (NoSuchFieldException e) {
-                        e.printStackTrace();
-                    }
-                    if (templateId == ItemList.bedStandard || templateId == ItemList.canopyBed) {
-                        if (template.isUseOnGroundOnly()) {
-                            try {
-                                ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                            }
-                            bedCnt++;
-                        }
-                    }
-                }
-                if (boatInCart) {
-                    Field fieldIsTransportable = null;
-                    try {
-                        fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
-                    } catch (NoSuchFieldException e) {
-                        e.printStackTrace();
-                    }
-                    if (template.isFloating()){
-                        try {
-                            ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                        boatInCartCnt++;
-                    }
-                }
-                if (loadAltar){
-                    Field fieldIsTransportable = null;
-                    try {
-                        fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
-                    } catch (NoSuchFieldException e) {
-                        e.printStackTrace();
-                    }
-                    if (templateId == ItemList.altarWood || templateId == ItemList.altarGold || templateId == ItemList.altarSilver ||
-                            templateId == ItemList.altarStone){
-                        try {
-                            ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                        altarCnt++;
-                    }
+        ArrayList<Boolean> optionSwitches = new ArrayList<>(Arrays.asList(useBedInCart, boatInCart, loadAltar, loadOther,
+                craftWithinCart));
+        // Too complex to analyse warnings where occurring so the following sections where shifted to methods.
+        int bedCnt = useBedReflection(optionSwitches);
+        int boatInCartCnt = boatInCartReflection(optionSwitches);
+        int altarCnt = loadAltarReflection(optionSwitches);
+        int otherCnt = loadOtherReflection(optionSwitches);
+        int craftWithinCartCnt = craftWithinCartReflection(optionSwitches);
 
-                }
-                if (loadOther){
-                    Field fieldIsTransportable = null;
-                    try {
-                        fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
-                    } catch (NoSuchFieldException e) {
-                        e.printStackTrace();
-                    }
-                    if (templateId == ItemList.trashBin){
-                        try {
-                            ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                        otherCnt++;
-                    }
-                }
-                if (craftWithinCart){
-                    Field fieldUseOnGroundOnly = null;
-                    try {
-                        fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
-                    } catch (NoSuchFieldException e) {
-                        e.printStackTrace();
-                    }
-                    if (templateId == ItemList.loom || templateId == ItemList.spinningWheel) {
-                        if (template.isUseOnGroundOnly()) {
-                            try {
-                                ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                            }
-                            craftWithinCartCnt++;
-                        }
-                    }
-                }
+        logger.log(Level.INFO, "useBedInCart: " + bedCnt);
+        logger.log(Level.INFO, "boatInCart: " + boatInCartCnt);
+        logger.log(Level.INFO, "loadAltar: " + altarCnt);
+        logger.log(Level.INFO, "loadOther: " + otherCnt);
+        logger.log(Level.INFO, "craftWithinCart: " + craftWithinCartCnt);
 
-            }
-            logger.log(Level.INFO, "useBedInCart: " + bedCnt);
-            logger.log(Level.INFO, "boatInCart: " + boatInCartCnt);
-            logger.log(Level.INFO, "loadAltar: " + altarCnt);
-            logger.log(Level.INFO, "loadOther: " + otherCnt);
-            logger.log(Level.INFO, "craftWithinCart: " + craftWithinCartCnt);
-        }
     }
 
     @Override
@@ -990,7 +898,8 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
             s = s.concat("if (targetEffects[i].getType() == (short)0) {");
             s = s.concat("zone1.removeEffect(targetEffects[i]);}}}");
             try {
-                ctmLoadCargo.insertAt(299,"{" + s + "}");
+                // Insert code right after the "You finish loading..." message.
+                ctmLoadCargo.insertAt(291,"{" + s + "}");
             } catch (CannotCompileException e) {
                 e.printStackTrace();
             }
@@ -1024,7 +933,8 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
             s = s.concat("com.wurmonline.server.effects.EffectFactory#getInstance().createFire($2.getWurmId(), $2.getPosX(), $2.getPosY(), $2.getPosZ(), $1.isOnSurface());");
             s = s.concat("$2.addEffect(effect);}}");
             try {
-                ctmUnloadCargo.insertAt(1307, "{ " + s + " }");
+                //Insert after the "%s finishes unloading..." and just before the "return true;".
+                ctmUnloadCargo.insertAt(1312, "{ " + s + " }");
             } catch (CannotCompileException e) {
                 e.printStackTrace();
             }
@@ -1247,6 +1157,170 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         return true;
     }
 
+    int useBedReflection(ArrayList<Boolean> optionSwitches){
+        int bedCnt = 0;
+        if (!optionSwitches.get(0))
+            return bedCnt;
+        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
+        try {
+            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        for (ItemTemplate template : fieldTemplates.values()) {
+            Integer templateId = template.getTemplateId();
+            Field fieldUseOnGroundOnly = EMPTY_FIELD;
+            try {
+                fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+            if (templateId == ItemList.bedStandard || templateId == ItemList.canopyBed) {
+                if (template.isUseOnGroundOnly()) {
+                    try {
+                        ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    bedCnt++;
+                }
+            }
+        }
+        return bedCnt;
+    }
+
+    int boatInCartReflection(ArrayList<Boolean> optionSwitches){
+        int boatInCartCnt = 0;
+        if (!optionSwitches.get(1))
+            return boatInCartCnt;
+        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
+        try {
+            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        for (ItemTemplate template : fieldTemplates.values()) {
+            Integer templateId = template.getTemplateId();
+
+            Field fieldIsTransportable = EMPTY_FIELD;
+            try {
+                fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+            if (template.isFloating()) {
+                try {
+                    ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                boatInCartCnt++;
+            }
+        }
+        return boatInCartCnt;
+    }
+
+    int loadAltarReflection(ArrayList<Boolean> optionSwitches){
+        int altarCnt = 0;
+        if (!optionSwitches.get(2))
+            return altarCnt;
+        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
+        try {
+            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        for (ItemTemplate template : fieldTemplates.values()) {
+            Integer templateId = template.getTemplateId();
+
+            Field fieldIsTransportable = EMPTY_FIELD;
+            try {
+                fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+            if (templateId == ItemList.altarWood || templateId == ItemList.altarGold || templateId == ItemList.altarSilver ||
+                    templateId == ItemList.altarStone) {
+                try {
+                    ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                altarCnt++;
+            }
+
+        }
+        return altarCnt;
+    }
+
+    int loadOtherReflection(ArrayList<Boolean> optionSwitches){
+        int otherCnt = 0;
+        if (!optionSwitches.get(3))
+            return otherCnt;
+        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
+        try {
+            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        for (ItemTemplate template : fieldTemplates.values()) {
+            Integer templateId = template.getTemplateId();
+            Field fieldIsTransportable = EMPTY_FIELD;
+            try {
+                fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+            if (templateId == ItemList.trashBin) {
+                try {
+                    ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                otherCnt++;
+            }
+        }
+        return otherCnt;
+    }
+
+    int craftWithinCartReflection(ArrayList<Boolean> optionSwitches){
+        int craftWithinCartCnt = 0;
+        if (!optionSwitches.get(4))
+            return craftWithinCartCnt;
+        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
+        try {
+            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        for (ItemTemplate template : fieldTemplates.values()) {
+            Integer templateId = template.getTemplateId();
+
+            Field fieldUseOnGroundOnly = EMPTY_FIELD;
+            try {
+                fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+            if (templateId == ItemList.loom || templateId == ItemList.spinningWheel) {
+                if (template.isUseOnGroundOnly()) {
+                    try {
+                        ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    craftWithinCartCnt++;
+                }
+            }
+        }
+        return craftWithinCartCnt;
+    }
+
     /*
     Multiple CodeIterators pointing to the same CodeAttribute can cause problems.
     Inserting gaps will always break other iterators pointing to the same attribute.
@@ -1254,6 +1328,7 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     Use one class wide object for each CodeAttribute, CodeIterator, MethodInfo for all Wurm methods.
     The following section are get and set methods to achieve this.
     */
+    //<editor-fold desc="Getter and Setter for CodeIterator, CodeAttribute, methodInfo.">
     public void setActionDB(ClassFile cf, String desc, String name){
         if (this.actionDBMInfo == null || this.actionDBIterator == null || this.actionDBAttribute == null){
             for (List a : new List[]{cf.getMethods()}){
@@ -1629,6 +1704,6 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     public CodeAttribute getAddCreationWindowOptionAttribute() {return this.addCreationWindowOptionAttribute;}
 
     public MethodInfo getAddCreationWindowOptionMInfo() {return this.addCreationWindowOptionMInfo;}
-
+    //</editor-fold>
 }
 
