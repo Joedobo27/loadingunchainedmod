@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
-public class jaseBT {
+class jaseBT {
 
     private static Logger logger = Logger.getLogger(jaseBT.class.getName());
     private ArrayList<Integer> opCodeStructure;
@@ -24,7 +24,7 @@ public class jaseBT {
     /**
      * This method combines the values in opCodeStructure and operandStructure for its instance and sets the new value.
      */
-    public void setOpcodeOperand() {
+    void setOpcodeOperand() {
         String s = "";
         s = s.concat(String.format("%02X", this.opCodeStructure.get(0) & 0xff));
         s = s.concat(this.operandStructure.get(0));
@@ -36,15 +36,15 @@ public class jaseBT {
         this.opcodeOperand = s;
     }
 
-    public void setOperandStructure(ArrayList<String> operandStructure) {
+    void setOperandStructure(ArrayList<String> operandStructure) {
         this.operandStructure = operandStructure;
     }
 
-    public void setOpCodeStructure(ArrayList<Integer> opCodeStructure) {
+    void setOpCodeStructure(ArrayList<Integer> opCodeStructure) {
         this.opCodeStructure = opCodeStructure;
     }
 
-    public String getOpcodeOperand() {return this.opcodeOperand;}
+    String getOpcodeOperand() {return this.opcodeOperand;}
 
     /**
      * This method looks for matches in the constantPool and returns found addresses.
@@ -55,7 +55,7 @@ public class jaseBT {
      *                  of its explanatory value in the constantPool.
      * @return is a string of 4 digits. These 4 numbers(in string form) are the address in the ConstantPool
      */
-    public static String findConstantPoolReference(ConstPool cp, int const_type, String javapDesc) {
+    static String findConstantPoolReference(ConstPool cp, int const_type, String javapDesc) {
         String[] splitDesc;
         String classPath = "";
         String name = "";
@@ -208,7 +208,7 @@ public class jaseBT {
      * @param str A string representations of hexadecimal digits. Commas delimit ArrayList entries.
      * @return Return an ArrayList of HashMaps.
      */
-    public static ArrayList<HashMap<String, Integer>> stringToArrayList(String str){
+    private static ArrayList<HashMap<String, Integer>> stringToArrayList(String str){
         ArrayList<HashMap<String, Integer>> ab = new ArrayList<>();
         HashMap<String, Integer> cd = new HashMap<>(4);
         for (String split : str.split(",")){
@@ -278,7 +278,7 @@ public class jaseBT {
      * @param replace String, Hexadecimal values as strings.
      * @return  Return a byte[] equivalent of replace.
      */
-    public static byte[] makeReplaceArray (String replace){
+    private static byte[] makeReplaceArray(String replace){
         ArrayList<int[]> replaceFinal = new ArrayList<>();
         String[] replaceSplit;
 
@@ -312,7 +312,7 @@ public class jaseBT {
      * @param ci CodeIterator, This object represents the method which will be changed.
      * @param method String, The name of the target method which will be changed.
      */
-    public static String byteCodeFindReplace(String find, String subFind, String replace, CodeIterator ci, String method) {
+    static String byteCodeFindReplace(String find, String subFind, String replace, CodeIterator ci, String method) {
         int findSize;
         int subSize;
         int replacedIndexLines = 0;
@@ -369,7 +369,7 @@ public class jaseBT {
      * @param findCodes This hashMap<String, Integer>  is simply compared.
      * @return boolean, If true they value equal, if false they don't value equal.
      */
-    public static boolean checkHashMapEquality(HashMap<String, Integer> removeIndex, HashMap<String, Integer> findCodes){
+    private static boolean checkHashMapEquality(HashMap<String, Integer> removeIndex, HashMap<String, Integer> findCodes){
         HashMap<String, Integer> copy;
         //noinspection unchecked
         copy = (HashMap<String, Integer>) removeIndex.clone();
@@ -386,7 +386,7 @@ public class jaseBT {
      * @param findCodes This ArrayList<HashMap<String, Integer>>
      * @return boolean, If true they equal, if false they don't value equal.
      */
-    public static boolean checkArrayEquality(LinkedList<HashMap<String, Integer>> removeIndex, ArrayList<HashMap<String, Integer>> findCodes){
+    private static boolean checkArrayEquality(LinkedList<HashMap<String, Integer>> removeIndex, ArrayList<HashMap<String, Integer>> findCodes){
         ArrayList<HashMap<String, Integer>> copyArr =  new ArrayList<>();
         //noinspection Convert2streamapi
         for (HashMap<String, Integer> itr : removeIndex){
@@ -416,7 +416,7 @@ public class jaseBT {
      * @param ci CodeIterator
      * @return      An ArrayList<ArrayList<HashMap<String, Integer>> object.
      */
-    public static ArrayList<HashMap<String, Integer>> byteCodeMakeArray (CodeIterator ci){
+    private static ArrayList<HashMap<String, Integer>> byteCodeMakeArray(CodeIterator ci){
         int index;
         int bitLine;
         int bitLine2;
