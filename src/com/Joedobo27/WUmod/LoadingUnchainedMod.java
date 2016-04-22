@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.spi.CalendarNameProvider;
 
 
 @SuppressWarnings("unused")
@@ -220,7 +221,6 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     }
 
     //<editor-fold desc="Javassist and bytecode altering section.">
-
     private void setJSSelf() throws NotFoundException {
         ctcSelf = pool.get(this.getClass().getName());
     }
@@ -367,12 +367,49 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         ctmPerformerIsNotSeatedOnAVehicle.setBody("{return false;}");
     }
 
-    private void boatInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
+    private void boatInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode, CannotCompileException, NotFoundException {
         if (!optionSwitches.get(5))
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
         String replaceByteResult;
+
+        /*
+        List toReturn = new LinkedList();
+        if (!target.getTemplate().isTransportable() || !target.getRealTemplate().isTransportable())
+            return toReturn;
+        if (player.getVehicle() == -10L & player.getDraggedItem().getWurmId() == -10L)
+            return toReturn;
+        com.wurmonline.server.behaviours.Vehicle vehicle;
+        if (player.getVehicle() != -10)
+            vehicle = Vehicles.getVehicleForId(player.getVehicle());
+        if (player.getDraggedItem().getWurmId() != -10L)
+            vehicle = Vehicles.getVehicleForId(player.getDraggedItem().getWurmId());
+        com.wurmonline.server.items.Item vehicleItem = Items.getItem(vehicle.getWurmid());
+        if (vehicle != null && !vehicle.creature && !vehicle.isChair() &&
+                (MethodsItems.mayUseInventoryOfVehicle(player, vehicleItem) || vehicleItem.getLockId() == -10L || Items.isItemDragged(vehicleItem))) {
+            toReturn.add(Actions.actionEntrys[605]);
+            if (target.getTopParent() != target.getWurmId())
+                toReturn.add(Actions.actionEntrys[606]);
+        }
+        */
+        // Creature player, Item target
+        String boatAndDrag = "List toReturn = new LinkedList();";
+        boatAndDrag = boatAndDrag.concat("if (!$2.getTemplate().isTransportable() || !$2.getRealTemplate().isTransportable()){return toReturn;}");
+        boatAndDrag = boatAndDrag.concat("if ($1.getVehicle() == -10L & $1.getDraggedItem().getWurmId() == -10L){return toReturn;}");
+        boatAndDrag = boatAndDrag.concat("com.wurmonline.server.behaviours.Vehicle vehicle;");
+        boatAndDrag = boatAndDrag.concat("if ($1.getVehicle() != -10){vehicle = Vehicles.getVehicleForId($1.getVehicle());}");
+        boatAndDrag = boatAndDrag.concat("if ($1.getDraggedItem().getWurmId() != -10L){vehicle = Vehicles.getVehicleForId($1.getDraggedItem().getWurmId());}");
+        boatAndDrag = boatAndDrag.concat("com.wurmonline.server.items.Item vehicleItem = Items.getItem(vehicle.getWurmid());");
+        boatAndDrag = boatAndDrag.concat("if (vehicle != null && !vehicle.creature && !vehicle.isChair() && ");
+        boatAndDrag = boatAndDrag.concat("(MethodsItems.mayUseInventoryOfVehicle($1, vehicleItem) || vehicleItem.getLockId() == -10L || Items.isItemDragged(vehicleItem))) {");
+        boatAndDrag = boatAndDrag.concat("toReturn.add(Actions.actionEntrys[605]);");
+        boatAndDrag = boatAndDrag.concat("if ($2.getTopParent() != $2.getWurmId()){toReturn.add(Actions.actionEntrys[606]);}");
+        boatAndDrag = boatAndDrag.concat("}return toReturn;");
+
+        CtMethod cmGetLoadUnloadActions = ctcCargoTransportationMethods.getMethod("getLoadUnloadActions", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Ljava/util/List;");
+        cmGetLoadUnloadActions.setBody("{ " + boatAndDrag + " }");
+
 
         //<editor-fold desc="getLoadUnloadActions() of CargoTransportationMethods.class changes.">
             /*
@@ -390,7 +427,7 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                                 return toReturn;
                             }
                         }
-            */
+
         //</editor-fold>
         setGetLoadUnloadActions(cfCargoTransportationMethods, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Ljava/util/List;",
                 "getLoadUnloadActions");
@@ -419,6 +456,7 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 getLoadUnloadActionsIterator, "getLoadUnloadActions");
         logger.log(Level.INFO, replaceByteResult);
         getLoadUnloadActionsMInfo.rebuildStackMapIf6(pool, cfCargoTransportationMethods);
+        */
     }
 
     private void useBedInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
