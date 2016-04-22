@@ -22,8 +22,6 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, ServerStartedListener {
 
-    private Field EMPTY_FIELD;
-    private CtMethod EMPTY_CTMETHOD;
     private static Logger logger = Logger.getLogger(LoadingUnchainedMod.class.getName());
 
     //<editor-fold desc="Configure controls.">
@@ -45,89 +43,85 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     //</editor-fold>
 
     //<editor-fold desc="Bytecode objects">
-    private ClassPool pool;
-    private CtClass ctcSelf;
-    private CtClass ctcCargoTransportationMethods;
-    private ClassFile cfCargoTransportationMethods;
-    private ConstPool cpCargoTransportationMethods;
-    private CtClass ctcItem;
-    private ClassFile cfItem;
-    private ConstPool cpItem;
-    private CtClass ctcMethodsItems;
-    private ClassFile cfMethodsItems;
-    private ConstPool cpMethodsItems;
-    private CtClass ctcItemBehaviour;
-    private ClassFile cfItemBehaviour;
-    private ConstPool cpItemBehaviour;
-    private CtClass ctcMethodsReligion;
-    private ClassFile cfMethodsReligion;
-    private ConstPool cpMethodsReligion;
-    private CtClass ctcDomainItemBehaviour;
-    private ClassFile cfDomainItemBehaviour;
-    private ConstPool cpDomainItemBehaviour;
-    private CtClass ctcActions;
+    private static ClassPool pool;
+    private static CtClass ctcSelf;
+    private static CtClass ctcCargoTransportationMethods;
+    private static ClassFile cfCargoTransportationMethods;
+    private static ConstPool cpCargoTransportationMethods;
+    private static ClassFile cfItem;
+    private static ConstPool cpItem;
+    private static CtClass ctcMethodsItems;
+    private static ClassFile cfMethodsItems;
+    private static ConstPool cpMethodsItems;
+    private static ClassFile cfItemBehaviour;
+    private static ConstPool cpItemBehaviour;
+    private static ClassFile cfMethodsReligion;
+    private static ConstPool cpMethodsReligion;
+    private static ClassFile cfDomainItemBehaviour;
+    private static ConstPool cpDomainItemBehaviour;
+    private static CtClass ctcActions;
     //</editor-fold>
 
     //<editor-fold desc="Javassist objects">
-    private CodeAttribute moveToItemAttribute;
-    private CodeIterator moveToItemIterator;
-    private MethodInfo moveToItemMInfo;
+    private static CodeAttribute moveToItemAttribute;
+    private static CodeIterator moveToItemIterator;
+    private static MethodInfo moveToItemMInfo;
 
-    private CodeAttribute loadCargoAttribute;
-    private CodeIterator loadCargoIterator;
-    private MethodInfo loadCargoMInfo;
+    private static CodeAttribute loadCargoAttribute;
+    private static CodeIterator loadCargoIterator;
+    private static MethodInfo loadCargoMInfo;
 
-    private CodeAttribute unloadCargoAttribute;
-    private CodeIterator unloadCargoIterator;
-    private MethodInfo unloadCargoMInfo;
+    private static CodeAttribute unloadCargoAttribute;
+    private static CodeIterator unloadCargoIterator;
+    private static MethodInfo unloadCargoMInfo;
 
-    private CodeAttribute performerIsNotOnATransportVehicleAttribute;
-    private CodeIterator performerIsNotOnATransportVehicleIterator;
-    private MethodInfo performerIsNotOnATransportVehicleMInfo;
+    private static CodeAttribute performerIsNotOnATransportVehicleAttribute;
+    private static CodeIterator performerIsNotOnATransportVehicleIterator;
+    private static MethodInfo performerIsNotOnATransportVehicleMInfo;
 
-    private CodeAttribute getLoadUnloadActionsAttribute;
-    private CodeIterator getLoadUnloadActionsIterator;
-    private MethodInfo getLoadUnloadActionsMInfo;
+    private static CodeAttribute getLoadUnloadActionsAttribute;
+    private static CodeIterator getLoadUnloadActionsIterator;
+    private static MethodInfo getLoadUnloadActionsMInfo;
 
-    private CodeAttribute addBedOptionsAttribute;
-    private CodeIterator addBedOptionsIterator;
-    private MethodInfo addBedOptionsMInfo;
+    private static CodeAttribute addBedOptionsAttribute;
+    private static CodeIterator addBedOptionsIterator;
+    private static MethodInfo addBedOptionsMInfo;
 
-    private CodeAttribute askSleepAttribute;
-    private CodeIterator askSleepIterator;
-    private MethodInfo askSleepMInfo;
+    private static CodeAttribute askSleepAttribute;
+    private static CodeIterator askSleepIterator;
+    private static MethodInfo askSleepMInfo;
 
-    private CodeAttribute sleepAttribute;
-    private CodeIterator sleepIterator;
-    private MethodInfo sleepMInfo;
+    private static CodeAttribute sleepAttribute;
+    private static CodeIterator sleepIterator;
+    private static MethodInfo sleepMInfo;
 
-    private CodeAttribute mayUseBedAttribute;
-    private CodeIterator mayUseBedIterator;
-    private MethodInfo mayUseBedMInfo;
+    private static CodeAttribute mayUseBedAttribute;
+    private static CodeIterator mayUseBedIterator;
+    private static MethodInfo mayUseBedMInfo;
 
-    private CodeAttribute startFireAttribute;
-    private CodeIterator startFireIterator;
-    private MethodInfo startFireMInfo;
+    private static CodeAttribute startFireAttribute;
+    private static CodeIterator startFireIterator;
+    private static MethodInfo startFireMInfo;
 
-    private CodeAttribute setFireAttribute;
-    private CodeIterator setFireIterator;
-    private MethodInfo setFireMInfo;
+    private static CodeAttribute setFireAttribute;
+    private static CodeIterator setFireIterator;
+    private static MethodInfo setFireMInfo;
 
-    private CodeAttribute addCreationWindowOptionAttribute;
-    private CodeIterator addCreationWindowOptionIterator;
-    private MethodInfo addCreationWindowOptionMInfo;
+    private static CodeAttribute addCreationWindowOptionAttribute;
+    private static CodeIterator addCreationWindowOptionIterator;
+    private static MethodInfo addCreationWindowOptionMInfo;
 
-    private CodeAttribute prayAttribute;
-    private CodeIterator prayIterator;
-    private MethodInfo prayMInfo;
+    private static CodeAttribute prayAttribute;
+    private static CodeIterator prayIterator;
+    private static MethodInfo prayMInfo;
 
-    private CodeAttribute sacrificeAttribute;
-    private CodeIterator sacrificeIterator;
-    private MethodInfo sacrificeMInfo;
+    private static CodeAttribute sacrificeAttribute;
+    private static CodeIterator sacrificeIterator;
+    private static MethodInfo sacrificeMInfo;
 
-    private CodeAttribute actionDBAttribute;
-    private CodeIterator actionDBIterator;
-    private MethodInfo actionDBMInfo;
+    private static CodeAttribute actionDBAttribute;
+    private static CodeIterator actionDBIterator;
+    private static MethodInfo actionDBMInfo;
     //</editor-fold>
 
     public void configure(Properties properties) {
@@ -155,47 +149,54 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     public void onServerStarted() {
         ArrayList<Boolean> optionSwitches = new ArrayList<>(Arrays.asList(useBedInCart, boatInCart, loadAltar, loadOther,
                 craftWithinCart));
-        // Too complex to analyse warnings where occurring so the following sections where shifted to methods.
-        int bedCnt = useBedReflection(optionSwitches);
-        int boatInCartCnt = boatInCartReflection(optionSwitches);
-        int altarCnt = loadAltarReflection(optionSwitches);
-        int otherCnt = loadOtherReflection(optionSwitches);
-        int craftWithinCartCnt = craftWithinCartReflection(optionSwitches);
+        try {
+            int bedCnt = useBedReflection(optionSwitches);
+            int boatInCartCnt = boatInCartReflection(optionSwitches);
+            int altarCnt = loadAltarReflection(optionSwitches);
+            int otherCnt = loadOtherReflection(optionSwitches);
+            int craftWithinCartCnt = craftWithinCartReflection(optionSwitches);
 
-        logger.log(Level.INFO, "useBedInCart: " + bedCnt);
-        logger.log(Level.INFO, "boatInCart: " + boatInCartCnt);
-        logger.log(Level.INFO, "loadAltar: " + altarCnt);
-        logger.log(Level.INFO, "loadOther: " + otherCnt);
-        logger.log(Level.INFO, "craftWithinCart: " + craftWithinCartCnt);
+            logger.log(Level.INFO, "useBedInCart: " + bedCnt);
+            logger.log(Level.INFO, "boatInCart: " + boatInCartCnt);
+            logger.log(Level.INFO, "loadAltar: " + altarCnt);
+            logger.log(Level.INFO, "loadOther: " + otherCnt);
+            logger.log(Level.INFO, "craftWithinCart: " + craftWithinCartCnt);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Override
     public void init() {
-        pool = HookManager.getInstance().getClassPool();
-        setJSSelf();
-        setJSCargoTransportationMethods();
-        setJSItem();
-        setJSMethodsItems();
-        setJSItemBehaviour();
-        setJSMethodsReligion();
-        setJSDomainItemBehaviour();
-        setJSActions();
+        try {
+            pool = HookManager.getInstance().getClassPool();
+            setJSSelf();
+            setJSCargoTransportationMethods();
+            setJSItem();
+            setJSMethodsItems();
+            setJSItemBehaviour();
+            setJSMethodsReligion();
+            setJSDomainItemBehaviour();
+            setJSActions();
 
-        ArrayList<Boolean> optionSwitches = new ArrayList<>(Arrays.asList(loadAnyBin, moveItemsIntoBinWithinContainer,
-                useCustomLoadTime, useCustomProximity, loadIntoDragged, boatInCart, useBedInCart, useMagicChestInCart,
-                useForgeInCart, craftWithinCart, useAltarInCart));
-        loadAnyBinBytecode(optionSwitches);
-        moveItemsIntoBinWithinContainerBytecode(optionSwitches);
-        useCustomLoadTimeBytecode(optionSwitches);
-        useCustomProximityBytecode(optionSwitches);
-        loadIntoDraggedBytecode(optionSwitches);
-        boatInCartBytecode(optionSwitches);
-        useBedInCartBytecode(optionSwitches);
-        useMagicChestInCartBytecode(optionSwitches);
-        useForgeInCartBytecode(optionSwitches);
-        craftWithinCartBytecode(optionSwitches);
-        useAltarInCartBytecode(optionSwitches);
+            ArrayList<Boolean> optionSwitches = new ArrayList<>(Arrays.asList(loadAnyBin, moveItemsIntoBinWithinContainer,
+                    useCustomLoadTime, useCustomProximity, loadIntoDragged, boatInCart, useBedInCart, useMagicChestInCart,
+                    useForgeInCart, craftWithinCart, useAltarInCart));
+            loadAnyBinBytecode(optionSwitches);
+            moveItemsIntoBinWithinContainerBytecode(optionSwitches);
+            useCustomLoadTimeBytecode(optionSwitches);
+            useCustomProximityBytecode(optionSwitches);
+            loadIntoDraggedBytecode(optionSwitches);
+            boatInCartBytecode(optionSwitches);
+            useBedInCartBytecode(optionSwitches);
+            useMagicChestInCartBytecode(optionSwitches);
+            useForgeInCartBytecode(optionSwitches);
+            craftWithinCartBytecode(optionSwitches);
+            useAltarInCartBytecode(optionSwitches);
+        } catch (BadBytecode | NotFoundException | CannotCompileException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -219,141 +220,70 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     }
 
     //<editor-fold desc="Javassist and bytecode altering section.">
-    private void setJSSelf() {
-        try {
-            this.ctcSelf = pool.get(this.getClass().getName());
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
+
+    private void setJSSelf() throws NotFoundException {
+        ctcSelf = pool.get(this.getClass().getName());
     }
 
-    private void setJSCargoTransportationMethods() {
-        try {
-            this.ctcCargoTransportationMethods = pool.get("com.wurmonline.server.behaviours.CargoTransportationMethods");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        this.cfCargoTransportationMethods = ctcCargoTransportationMethods.getClassFile();
-        this.cpCargoTransportationMethods = cfCargoTransportationMethods.getConstPool();
+    private void setJSCargoTransportationMethods() throws NotFoundException {
+        ctcCargoTransportationMethods = pool.get("com.wurmonline.server.behaviours.CargoTransportationMethods");
+        cfCargoTransportationMethods = ctcCargoTransportationMethods.getClassFile();
+        cpCargoTransportationMethods = cfCargoTransportationMethods.getConstPool();
     }
 
-    private void setJSItem() {
-        try {
-            this.ctcItem = pool.get("com.wurmonline.server.items.Item");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        this.cfItem = ctcItem.getClassFile();
-        this.cpItem = cfItem.getConstPool();
+    private void setJSItem() throws NotFoundException {
+        CtClass ctcItem = pool.get("com.wurmonline.server.items.Item");
+        cfItem = ctcItem.getClassFile();
+        cpItem = cfItem.getConstPool();
     }
 
-    private void setJSMethodsItems() {
-        try {
-            this.ctcMethodsItems = pool.get("com.wurmonline.server.behaviours.MethodsItems");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        this.cfMethodsItems = ctcMethodsItems.getClassFile();
-        this.cpMethodsItems = cfMethodsItems.getConstPool();
+    private void setJSMethodsItems() throws NotFoundException {
+        ctcMethodsItems = pool.get("com.wurmonline.server.behaviours.MethodsItems");
+        cfMethodsItems = ctcMethodsItems.getClassFile();
+        cpMethodsItems = cfMethodsItems.getConstPool();
     }
 
-    private void setJSItemBehaviour() {
-        try {
-            this.ctcItemBehaviour = pool.get("com.wurmonline.server.behaviours.ItemBehaviour");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        this.cfItemBehaviour = ctcItemBehaviour.getClassFile();
-        this.cpItemBehaviour = cfItemBehaviour.getConstPool();
+    private void setJSItemBehaviour() throws NotFoundException {
+        CtClass ctcItemBehaviour = pool.get("com.wurmonline.server.behaviours.ItemBehaviour");
+        cfItemBehaviour = ctcItemBehaviour.getClassFile();
+        cpItemBehaviour = cfItemBehaviour.getConstPool();
     }
 
-    private void setJSMethodsReligion() {
-        try {
-            this.ctcMethodsReligion = pool.get("com.wurmonline.server.behaviours.MethodsReligion");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        this.cfMethodsReligion = ctcMethodsReligion.getClassFile();
-        this.cpMethodsReligion = cfMethodsReligion.getConstPool();
+    private void setJSMethodsReligion() throws NotFoundException {
+        CtClass ctcMethodsReligion = pool.get("com.wurmonline.server.behaviours.MethodsReligion");
+        cfMethodsReligion = ctcMethodsReligion.getClassFile();
+        cpMethodsReligion = cfMethodsReligion.getConstPool();
     }
 
-    private void setJSDomainItemBehaviour() {
-        try {
-            this.ctcDomainItemBehaviour = pool.get("com.wurmonline.server.behaviours.DomainItemBehaviour");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        this.cfDomainItemBehaviour = ctcDomainItemBehaviour.getClassFile();
-        this.cpDomainItemBehaviour = cfDomainItemBehaviour.getConstPool();
+    private void setJSDomainItemBehaviour() throws NotFoundException {
+        CtClass ctcDomainItemBehaviour = pool.get("com.wurmonline.server.behaviours.DomainItemBehaviour");
+        cfDomainItemBehaviour = ctcDomainItemBehaviour.getClassFile();
+        cpDomainItemBehaviour = cfDomainItemBehaviour.getConstPool();
     }
 
-    private void setJSActions() {
-        CtClass ctcActions = pool.makeClass("Default");
-        try {
-            this.ctcActions = pool.get("com.wurmonline.server.behaviours.Actions");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        //this.cfActions = ctcActions.getClassFile();
-        //this.cpActions = cfActions.getConstPool();
+    private void setJSActions() throws NotFoundException {
+        ctcActions = pool.get("com.wurmonline.server.behaviours.Actions");
     }
 
-    private void loadAnyBinBytecode(ArrayList<Boolean> optionSwitches) {
+    private void loadAnyBinBytecode(ArrayList<Boolean> optionSwitches) throws NotFoundException, CannotCompileException {
         if (!optionSwitches.get(0))
             return;
-        CtMethod ctmTargetIsNotEmptyContainerCheck = EMPTY_CTMETHOD;
-        try {
-            ctmTargetIsNotEmptyContainerCheck = ctcCargoTransportationMethods.getMethod("targetIsNotEmptyContainerCheck",
-                    "(Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Z)Z");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            ctmTargetIsNotEmptyContainerCheck.setBody("{return false;}");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
+        // Alter targetIsNotEmptyContainerCheck() of cargoTransportationMethods.class to always return false.
+        CtMethod ctmTargetIsNotEmptyContainerCheck = ctcCargoTransportationMethods.getMethod("targetIsNotEmptyContainerCheck",
+                "(Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Z)Z");
+        ctmTargetIsNotEmptyContainerCheck.setBody("{return false;}");
     }
 
-    private void moveItemsIntoBinWithinContainerBytecode(ArrayList<Boolean> optionSwitches) {
+    private void moveItemsIntoBinWithinContainerBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
         if (!optionSwitches.get(1))
             return;
-        jaseBT jbt;
-        jaseBT jbt1;
+        JDBByteCode jbt;
+        JDBByteCode jbt1;
         String replaceByteResult;
-        jbt = new jaseBT();
-        // Lines 3975 to 4031 in moveToItem of Javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
-                Opcode.LCMP, Opcode.IFEQ, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.IFNULL, Opcode.LDC_W,
-                Opcode.ICONST_1, Opcode.ANEWARRAY, Opcode.DUP, Opcode.ICONST_0, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.AASTORE,
-                Opcode.INVOKESTATIC, Opcode.ASTORE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
-                Opcode.ICONST_0, Opcode.IRETURN)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("08",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "getTopParent:()J"),
-                "08",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "getWurmId:()J"),
-                "", "002e", "08",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "isCrate:()Z"),
-                "0026", "", "0020",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_String, "The %s needs to be on the ground."),
-                "",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Class, "java/lang/Object"),
-                "", "", "08",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "getName:()Ljava/lang/String;"),
-                "",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "com/wurmonline/server/utils/StringUtil.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;"),
-                "13", "",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                "13",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
-                "", "")));
-        jbt.setOpcodeOperand();
-        setMoveToItem(cfItem, "(Lcom/wurmonline/server/creatures/Creature;JZ)Z", "moveToItem");
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "0000,000000,0000,000000,00,000000,0000,000000,000000,00,000000,000000,00,000000,00,00,0000,000000,00,000000,0000,00,000000,0000,000000,00,00",
-                getMoveToItemIterator(), "moveToItem");
-        //<editor-fold desc="Replaced code">
+
+        //<editor-fold desc="moveToItem() of Item.class changes">
             /*
+            Lines 3975 to 4031 in moveToItem of Javap.exe dump.
             Removed-
                 if (target.getTopParent() != target.getWurmId() && !target.isCrate()) {
                     if (mover != null) {
@@ -364,123 +294,89 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 }
             */
         //</editor-fold>
+        setMoveToItem(cfItem, "(Lcom/wurmonline/server/creatures/Creature;JZ)Z", "moveToItem");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
+                Opcode.LCMP, Opcode.IFEQ, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.IFNULL, Opcode.LDC_W,
+                Opcode.ICONST_1, Opcode.ANEWARRAY, Opcode.DUP, Opcode.ICONST_0, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.AASTORE,
+                Opcode.INVOKESTATIC, Opcode.ASTORE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
+                Opcode.ICONST_0, Opcode.IRETURN)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("08",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "getTopParent:()J"),
+                "08",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "getWurmId:()J"),
+                "", "002e", "08",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "isCrate:()Z"),
+                "0026", "", "0020",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_String, "The %s needs to be on the ground."),
+                "",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Class, "java/lang/Object"),
+                "", "", "08",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "getName:()Ljava/lang/String;"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "com/wurmonline/server/utils/StringUtil.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;"),
+                "13", "",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                "13",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref, "com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                "", "")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "0000,000000,0000,000000,00,000000,0000,000000,000000,00,000000,000000,00,000000,00,00,0000,000000,00,000000,0000,00,000000,0000,000000,00,00",
+                moveToItemIterator, "moveToItem");
         logger.log(Level.INFO, replaceByteResult);
     }
 
-    private void useCustomLoadTimeBytecode(ArrayList<Boolean> optionSwitches) {
+    private void useCustomLoadTimeBytecode(ArrayList<Boolean> optionSwitches)throws NotFoundException, CannotCompileException {
         if (!optionSwitches.get(2))
             return;
-        CtMethod cmGetLoadUnloadActionTime = EMPTY_CTMETHOD;
-        try {
-            cmGetLoadUnloadActionTime = ctcActions.getMethod("getLoadUnloadActionTime", "(Lcom/wurmonline/server/creatures/Creature;)I");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            cmGetLoadUnloadActionTime.setBody("{ return " + loadDurationTime + "; }");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
+        // alter getLoadUnloadActionTime() of Actions.class to always return the properties value in loadDurationTime.
+        CtMethod cmGetLoadUnloadActionTime = ctcActions.getMethod("getLoadUnloadActionTime", "(Lcom/wurmonline/server/creatures/Creature;)I");
+        cmGetLoadUnloadActionTime.setBody("{ return " + loadDurationTime + "; }");
         logger.log(Level.INFO, "Custom load time set.");
-            /*
-            String s = "10" + String.format("%02X", loadDurationTime & 0xff);
-            setLoadCargo(cfCargoTransportationMethods, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z", "loadCargo");
-            replaceByteResult = jaseBT.byteCodeFindReplace("AC,1064,3608", "1064", s, getLoadCargoIterator(), "loadCargo");
-            logger.log(Level.INFO, replaceByteResult);
-            setUnloadCargo(cfCargoTransportationMethods, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z", "unloadCargo");
-            replaceByteResult = jaseBT.byteCodeFindReplace("AC,1064,3606", "1064", s, getUnloadCargoIterator(), "unloadCargo");
-            logger.log(Level.INFO, replaceByteResult);
-            */
     }
 
-    private void useCustomProximityBytecode(ArrayList<Boolean> optionSwitches) {
+    private void useCustomProximityBytecode(ArrayList<Boolean> optionSwitches) throws  NotFoundException, CannotCompileException {
         if (!optionSwitches.get(3))
             return;
-        CtMethod ctmGetLoadActionDistance = EMPTY_CTMETHOD;
-        try {
-            ctmGetLoadActionDistance = ctcCargoTransportationMethods.getMethod("getLoadActionDistance",
-                    "(Lcom/wurmonline/server/items/Item;)I");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            ctmGetLoadActionDistance.setBody("{return " + loadProximityRequired + ";}");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
+        // alter getLoadActionDistance() of  cargoTransportationMethods.class to return properties value in loadProximityRequired.
+        CtMethod ctmGetLoadActionDistance = ctcCargoTransportationMethods.getMethod("getLoadActionDistance",
+                "(Lcom/wurmonline/server/items/Item;)I");
+        ctmGetLoadActionDistance.setBody("{return " + loadProximityRequired + ";}");
     }
 
-    private void loadIntoDraggedBytecode(ArrayList<Boolean> optionSwitches) {
+    private void loadIntoDraggedBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode, NotFoundException, CannotCompileException {
         if (!optionSwitches.get(4))
             return;
         String replaceByteResult;
+
+        //performerIsNotOnATransportVehicle() of cargoTransportationMethods: Removed "vehicle == null ||".
         setPerformerIsNotOnATransportVehicle(cfCargoTransportationMethods, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/behaviours/Vehicle;)Z",
                 "performerIsNotOnATransportVehicle");
-        replaceByteResult = jaseBT.byteCodeFindReplace("2B,C6000A,2B", "2B,C6000A", "00,000000", getPerformerIsNotOnATransportVehicleIterator(), "performerIsNotOnATransportVehicle");
-        //Removed "vehicle == null ||".
+        replaceByteResult = JDBByteCode.byteCodeFindReplace("2B,C6000A,2B", "2B,C6000A", "00,000000", performerIsNotOnATransportVehicleIterator, "performerIsNotOnATransportVehicle");
         logger.log(Level.INFO, replaceByteResult);
-        CtMethod ctmPerformerIsNotOnAVehicle = new CtMethod(CtClass.voidType,"default",new CtClass[]{},ctcCargoTransportationMethods);
-        try {
-            ctmPerformerIsNotOnAVehicle = ctcCargoTransportationMethods.getMethod("performerIsNotOnAVehicle",
-                    "(Lcom/wurmonline/server/creatures/Creature;)Z");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            ctmPerformerIsNotOnAVehicle.setBody("{return false;}");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
 
-        CtMethod ctmPerformerIsNotSeatedOnAVehicle = new CtMethod(CtClass.voidType,"default",new CtClass[]{},ctcCargoTransportationMethods);
-        try {
-            ctmPerformerIsNotSeatedOnAVehicle = ctcCargoTransportationMethods.getMethod("performerIsNotSeatedOnAVehicle",
-                    "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/behaviours/Seat;)Z");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            ctmPerformerIsNotSeatedOnAVehicle.setBody("{return false;}");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
+        // performerIsNotOnAVehicle() of cargoTransportationMethods always return false.
+        CtMethod ctmPerformerIsNotOnAVehicle = ctcCargoTransportationMethods.getMethod("performerIsNotOnAVehicle",
+                "(Lcom/wurmonline/server/creatures/Creature;)Z");
+        ctmPerformerIsNotOnAVehicle.setBody("{return false;}");
+
+        // performerIsNotSeatedOnAVehicle() of cargoTransportationMethods always return false.
+        CtMethod ctmPerformerIsNotSeatedOnAVehicle = ctcCargoTransportationMethods.getMethod("performerIsNotSeatedOnAVehicle",
+                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/behaviours/Seat;)Z");
+        ctmPerformerIsNotSeatedOnAVehicle.setBody("{return false;}");
     }
 
-    private void boatInCartBytecode(ArrayList<Boolean> optionSwitches) {
+    private void boatInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
         if (!optionSwitches.get(5))
             return;
-        jaseBT jbt;
-        jaseBT jbt1;
+        JDBByteCode jbt;
+        JDBByteCode jbt1;
         String replaceByteResult;
-        setGetLoadUnloadActions(cfCargoTransportationMethods, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Ljava/util/List;",
-                "getLoadUnloadActions");
-        jbt = new jaseBT();
-        // replaced lines 107-167 in cargoTransportationMethods of the javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.ALOAD,
-                Opcode.INVOKEVIRTUAL, Opcode.SIPUSH, Opcode.IF_ICMPEQ, Opcode.ALOAD_2, Opcode.ARETURN, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
-                Opcode.IFEQ, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.SIPUSH, Opcode.IF_ICMPNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
-                Opcode.ASTORE, Opcode.ALOAD, Opcode.IFNONNULL, Opcode.ALOAD_2, Opcode.ARETURN, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
-                Opcode.IFNE, Opcode.ALOAD_2, Opcode.ARETURN)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.isBoat:()Z"),
-                "0010","05",
-                jaseBT.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.getTemplateId:()I"),
-                "0355", "0005", "", "", "",
-                jaseBT.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.isUnfinished:()Z"),
-                "0025", "05",
-                jaseBT.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.getTemplateId:()I"),
-                "0355", "001a","",
-                jaseBT.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.getRealTemplate:()Lcom/wurmonline/server/items/ItemTemplate;"),
-                "06", "06","0005","","","06",
-                jaseBT.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/ItemTemplate.isBoat:()Z"),
-                "0005", "", "")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(),jbt.getOpcodeOperand(),
-                "00,000000,000000,0000,000000,000000,000000,00,00,00,000000,000000,0000,000000,000000,000000,00,000000,0000,0000,000000,00,00,0000,000000,000000,00,00",
-                getGetLoadUnloadActionsIterator(), "getLoadUnloadActions");
-        //<editor-fold desc="Replaced code">
+
+        //<editor-fold desc="getLoadUnloadActions() of CargoTransportationMethods.class changes.">
             /*
+            replaced lines 107-167 in cargoTransportationMethods of the javap.exe dump.
             Removed-
                     if (target.isBoat() && vehicleItem.getTemplateId() != 853) {
                             return toReturn;
@@ -496,98 +392,89 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                         }
             */
         //</editor-fold>
+        setGetLoadUnloadActions(cfCargoTransportationMethods, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Ljava/util/List;",
+                "getLoadUnloadActions");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.ALOAD,
+                Opcode.INVOKEVIRTUAL, Opcode.SIPUSH, Opcode.IF_ICMPEQ, Opcode.ALOAD_2, Opcode.ARETURN, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
+                Opcode.IFEQ, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.SIPUSH, Opcode.IF_ICMPNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
+                Opcode.ASTORE, Opcode.ALOAD, Opcode.IFNONNULL, Opcode.ALOAD_2, Opcode.ARETURN, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
+                Opcode.IFNE, Opcode.ALOAD_2, Opcode.ARETURN)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
+                JDBByteCode.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.isBoat:()Z"),
+                "0010","05",
+                JDBByteCode.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.getTemplateId:()I"),
+                "0355", "0005", "", "", "",
+                JDBByteCode.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.isUnfinished:()Z"),
+                "0025", "05",
+                JDBByteCode.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.getTemplateId:()I"),
+                "0355", "001a","",
+                JDBByteCode.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/Item.getRealTemplate:()Lcom/wurmonline/server/items/ItemTemplate;"),
+                "06", "06","0005","","","06",
+                JDBByteCode.findConstantPoolReference(cpCargoTransportationMethods, ConstPool.CONST_Methodref, "com/wurmonline/server/items/ItemTemplate.isBoat:()Z"),
+                "0005", "", "")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(),jbt.getOpcodeOperand(),
+                "00,000000,000000,0000,000000,000000,000000,00,00,00,000000,000000,0000,000000,000000,000000,00,000000,0000,0000,000000,00,00,0000,000000,000000,00,00",
+                getLoadUnloadActionsIterator, "getLoadUnloadActions");
         logger.log(Level.INFO, replaceByteResult);
-        //getGetLoadUnloadActionsAttribute().computeMaxStack();
-        try {
-            getGetLoadUnloadActionsMInfo().rebuildStackMapIf6(pool, cfCargoTransportationMethods);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
+        getLoadUnloadActionsMInfo.rebuildStackMapIf6(pool, cfCargoTransportationMethods);
     }
 
-    private void useBedInCartBytecode(ArrayList<Boolean> optionSwitches) {
+    private void useBedInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
         if (!optionSwitches.get(6))
             return;
-        jaseBT jbt;
-        jaseBT jbt1;
+        JDBByteCode jbt;
+        JDBByteCode jbt1;
         String replaceByteResult;
-        setAddBedOptions(cfItemBehaviour,
-                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Ljava/util/List;)V", "addBedOptions");
-        try {
-            getAddBedOptionsIterator().insertGap(41, 12);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
-        try {
-            getAddBedOptionsIterator().insertExGap(373, 18);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
-        jbt = new jaseBT();
-        // Working with lines 17-35 in addBedOptions of the javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
-                Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.NOP, Opcode.NOP, Opcode.NOP,
-                Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("04", "0174","04",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                "016c","04",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                jaseBT.findConstantPoolReference(cpItemBehaviour, ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
-                "0161", "", "", "", "", "", "", "", "", "", "", "", "")));
-        jbt.setOpcodeOperand();
 
-        jbt1 = new jaseBT();
-        jbt1.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
-                Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL,
-                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LCMP, Opcode.IFNE)));
-        jbt1.setOperandStructure(new ArrayList<>(Arrays.asList("04", "0165","04",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                "015d","04",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                jaseBT.findConstantPoolReference(cpItemBehaviour, ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
-                "0152","",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
-                "",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
-                "","0146")));
-        jbt1.setOpcodeOperand();
-
-        replaceByteResult = jaseBT.byteCodeFindReplace( jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                jbt1.getOpcodeOperand(), getAddBedOptionsIterator(), "addBedOptions");
-        //<editor-fold desc="Replaced code">
+        //<editor-fold desc="addBedOptions() of ItemBehaviour.class changes.">
             /*
+            Working with lines 17-35 in addBedOptions of the javap.exe dump.
+
             Added "&& target.getTopParent() == target.getWurmId()" to the logic statement:
             "if (t != null && t.getStructure() != null && t.getStructure().isTypeHouse()".
             If the bed is on ground and in a house use renting.
             */
         //</editor-fold>
-        logger.log(Level.INFO, replaceByteResult);
-
-        jbt = new jaseBT();
-        // Working with lines 358-361 in addBedOptions of the javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.INVOKEVIRTUAL, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP,
-                Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP,
-                Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.RETURN)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList(
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"java/util/logging/Logger.log:(Ljava/util/logging/Level;Ljava/lang/String;Ljava/lang/Throwable;)V"),
-                "","","","","","","","","","","","","","","","","","","")));
+        setAddBedOptions(cfItemBehaviour,
+                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Ljava/util/List;)V", "addBedOptions");
+        addBedOptionsIterator.insertGap(41, 12);
+        addBedOptionsIterator.insertExGap(373, 18);
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
+                Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.NOP, Opcode.NOP, Opcode.NOP,
+                Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("04", "0174","04",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                "016c","04",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour, ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
+                "0161", "", "", "", "", "", "", "", "", "", "", "", "")));
         jbt.setOpcodeOperand();
 
-        jbt1 = new jaseBT();
-        jbt1.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.GOTO, Opcode.ALOAD_3, Opcode.GETSTATIC, Opcode.SIPUSH,
-                Opcode.AALOAD, Opcode.INVOKEINTERFACE, Opcode.NOP, Opcode.POP)));
-        jbt1.setOperandStructure(new ArrayList<>(Arrays.asList("0012","",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Fieldref,"com/wurmonline/server/behaviours/Actions.actionEntrys:[Lcom/wurmonline/server/behaviours/ActionEntry;"),
-                "0145","",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref, "java/util/List.add:(Ljava/lang/Object;)Z") + "0200",
-                "","")));
+        jbt1 = new JDBByteCode();
+        jbt1.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
+                Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL,
+                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LCMP, Opcode.IFNE)));
+        jbt1.setOperandStructure(new ArrayList<>(Arrays.asList("04", "0165","04",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                "015d","04",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour, ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
+                "0152","",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
+                "","0146")));
         jbt1.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(),
-                "00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00",
-                jbt1.getOpcodeOperand(),
-                getAddBedOptionsIterator(), "addBedOptions");
-        //<editor-fold desc="Replaced code">
+        replaceByteResult = JDBByteCode.byteCodeFindReplace( jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                jbt1.getOpcodeOperand(), addBedOptionsIterator, "addBedOptions");
+        logger.log(Level.INFO, replaceByteResult);
+
+        //<editor-fold desc="addBedOptions() of ItemBehaviour.class changes.">
             /*
+            Working with lines 358-361 in addBedOptions of the javap.exe dump.
             Added-
                 } else {
                     toReturn.add(Actions.actionEntrys[325]);
@@ -597,53 +484,34 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
             When the bed is not on the ground and not in a house it can't be controlled so use free sleep.
             */
         //</editor-fold>
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.INVOKEVIRTUAL, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP,
+                Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP,
+                Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.NOP, Opcode.RETURN)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList(
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"java/util/logging/Logger.log:(Ljava/util/logging/Level;Ljava/lang/String;Ljava/lang/Throwable;)V"),
+                "","","","","","","","","","","","","","","","","","","")));
+        jbt.setOpcodeOperand();
+        jbt1 = new JDBByteCode();
+        jbt1.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.GOTO, Opcode.ALOAD_3, Opcode.GETSTATIC, Opcode.SIPUSH,
+                Opcode.AALOAD, Opcode.INVOKEINTERFACE, Opcode.NOP, Opcode.POP)));
+        jbt1.setOperandStructure(new ArrayList<>(Arrays.asList("0012","",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Fieldref,"com/wurmonline/server/behaviours/Actions.actionEntrys:[Lcom/wurmonline/server/behaviours/ActionEntry;"),
+                "0145","",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref, "java/util/List.add:(Ljava/lang/Object;)Z") + "0200",
+                "","")));
+        jbt1.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(),
+                "00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00",
+                jbt1.getOpcodeOperand(),
+                addBedOptionsIterator, "addBedOptions");
         logger.log(Level.INFO, replaceByteResult);
         //getAddBedOptionsAttribute().computeMaxStack();
-        try {
-            getAddBedOptionsMInfo().rebuildStackMapIf6(pool, cfItemBehaviour);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
+        addBedOptionsMInfo.rebuildStackMapIf6(pool, cfItemBehaviour);
 
-        setAskSleep(cfMethodsItems, "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z",
-                "askSleep");
-        jbt = new jaseBT();
-        // Working with lines 105 - 180 in askSleep of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL,
-                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKESTATIC, Opcode.ASTORE, Opcode.ALOAD, Opcode.IFNULL, Opcode.ALOAD,
-                Opcode.INVOKEVIRTUAL, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1,
-                Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
-                Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileX:()I"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileY:()I"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isOnSurface:()Z"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/Zones.getTileOrNull:(IIZ)Lcom/wurmonline/server/zones/VolaTile;"),
-                "05","05","00b7","05",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                "000e","05",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
-                "000f","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"You would get no sleep outside tonight."),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
-                "","","05",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isFinished:()Z"),
-                "000f","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The house is too windy to provide protection."),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
-                "","")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,00,000000,00,000000,000000,0000,0000,000000,0000,000000,000000,0000,000000,000000,000000,00,000000,000000,000000,00,00,0000,000000,000000,000000,00,000000,000000,000000,00,00",
-                getAskSleepIterator(), "askSleep");
-        //<editor-fold desc="Replaced code">
+        //<editor-fold desc="askSleep() of MethodsItems.class changes">
             /*
+            Working with lines 105 - 180 in askSleep of javap.exe dump.
             Removed-
                 final VolaTile t = Zones.getTileOrNull(target.getTileX(), target.getTileY(), target.isOnSurface());
                 if (t != null) {
@@ -657,80 +525,94 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                     }
             */
         //</editor-fold>
+        setAskSleep(cfMethodsItems, "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z",
+                "askSleep");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL,
+                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKESTATIC, Opcode.ASTORE, Opcode.ALOAD, Opcode.IFNULL, Opcode.ALOAD,
+                Opcode.INVOKEVIRTUAL, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1,
+                Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
+                Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileX:()I"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileY:()I"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isOnSurface:()Z"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/Zones.getTileOrNull:(IIZ)Lcom/wurmonline/server/zones/VolaTile;"),
+                "05","05","00b7","05",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                "000e","05",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
+                "000f","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"You would get no sleep outside tonight."),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                "","","05",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isFinished:()Z"),
+                "000f","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The house is too windy to provide protection."),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                "","")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,00,000000,00,000000,000000,0000,0000,000000,0000,000000,000000,0000,000000,000000,000000,00,000000,000000,000000,00,00,0000,000000,000000,000000,00,000000,000000,000000,00,00",
+                askSleepIterator, "askSleep");
         logger.log(Level.INFO, replaceByteResult);
 
-        jbt = new jaseBT();
-        // Removing indexes 307 - 365 in askSleep of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.GETSTATIC, Opcode.GETSTATIC, Opcode.NEW, Opcode.DUP, Opcode.LDC_W,
-                Opcode.INVOKESPECIAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL,
-                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2,
-                Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList(
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"logger:Ljava/util/logging/Logger;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"java/util/logging/Level.WARNING:Ljava/util/logging/Level;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Class,"java/lang/StringBuilder"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"Why is tile for bed at "),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.<init>:(Ljava/lang/String;)V"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileX:()I"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileY:()I"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isOnSurface:()Z"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Z)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String," null?"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.toString:()Ljava/lang/String;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/util/logging/Logger.log:(Ljava/util/logging/Level;Ljava/lang/String;)V")
-        )));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "000000,000000,000000,00,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,000000,000000",
-                getAskSleepIterator(), "askSleep");
-        //<editor-fold desc="Replaced code">
+        //<editor-fold desc="askSleep() of MethodsItems.class changes">
             /*
+            Removing indexes 307 - 365 in askSleep of javap.exe dump.
             Removed-
                 else {
                     MethodsItems.logger.log(Level.WARNING, "Why is tile for bed at " + target.getTileX() + "," + target.getTileY() + "," + target.isOnSurface() + " null?");
                 }
             */
         //</editor-fold>
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.GETSTATIC, Opcode.GETSTATIC, Opcode.NEW, Opcode.DUP, Opcode.LDC_W,
+                Opcode.INVOKESPECIAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL,
+                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2,
+                Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList(
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"logger:Ljava/util/logging/Logger;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"java/util/logging/Level.WARNING:Ljava/util/logging/Level;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Class,"java/lang/StringBuilder"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"Why is tile for bed at "),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.<init>:(Ljava/lang/String;)V"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileX:()I"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileY:()I"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isOnSurface:()Z"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Z)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String," null?"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.toString:()Ljava/lang/String;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/util/logging/Logger.log:(Ljava/util/logging/Level;Ljava/lang/String;)V")
+        )));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "000000,000000,000000,00,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,000000,000000",
+                askSleepIterator, "askSleep");
         logger.log(Level.INFO, replaceByteResult);
         //getAskSleepAttribute().computeMaxStack();
-        try {
-            getAskSleepMInfo().rebuildStackMapIf6(pool, cfMethodsItems);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
+        askSleepMInfo.rebuildStackMapIf6(pool, cfMethodsItems);
 
-        setSleep(cfMethodsItems, "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z",
-                "sleep");
-        jbt = new jaseBT();
-        // Removing indexes 48 - 71 in sleep of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL,
-                Opcode.LCMP, Opcode.IFEQ, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
-                "","000f","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The bed needs to be on the ground."),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
-                "","")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,00,000000,00,000000,00,000000,000000,000000,00,00",
-                getSleepIterator(), "sleep");
-        //<editor-fold desc="Replaced code">
+        //<editor-fold desc="sleep() of MethodsItems.class changes.">
             /*
+            Removing indexes 48 - 71 in sleep of javap.exe dump.
             Removed-
                 if (target.getTopParent() != target.getWurmId()) {
                     performer.getCommunicator().sendNormalServerMessage("The bed needs to be on the ground.");
@@ -738,37 +620,29 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 }
             */
         //</editor-fold>
-        logger.log(Level.INFO, replaceByteResult);
-
-        jbt = new jaseBT();
-        // Removing indexes 170 - 223 in sleep of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
-                Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1,
-                Opcode.IRETURN, Opcode.ALOAD,Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
-                Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("06",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                "000e","06",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
-                "000f","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"You would get no sleep outside tonight."),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
-                "","","06",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isFinished:()Z"),
-                "000f","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The house is too windy to provide protection."),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+        setSleep(cfMethodsItems, "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z",
+                "sleep");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL,
+                Opcode.LCMP, Opcode.IFEQ, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
+                "","000f","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The bed needs to be on the ground."),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
                 "","")));
         jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "0000,000000,000000,0000,000000,000000,000000,00,000000,000000,000000,00,00,0000,000000,000000,000000,00,000000,000000,000000,00,00",
-                getSleepIterator(), "sleep");
-        //<editor-fold desc="Replace code">
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,00,000000,00,000000,00,000000,000000,000000,00,00",
+                sleepIterator, "sleep");
+        logger.log(Level.INFO, replaceByteResult);
+
+        //<editor-fold desc="sleep() of MethodsItems.class changes.">
             /*
+            Removing indexes 170 - 223 in sleep of javap.exe dump.
             Removed-
                 if (t.getStructure() == null || !t.getStructure().isTypeHouse()) {
                     performer.getCommunicator().sendNormalServerMessage("You would get no sleep outside tonight.");
@@ -780,84 +654,84 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 }
             */
         //</editor-fold>
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.IFNULL, Opcode.ALOAD, Opcode.INVOKEVIRTUAL,
+                Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1,
+                Opcode.IRETURN, Opcode.ALOAD,Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFNE, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
+                Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1, Opcode.IRETURN)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("06",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                "000e","06",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
+                "000f","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"You would get no sleep outside tonight."),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                "","","06",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isFinished:()Z"),
+                "000f","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The house is too windy to provide protection."),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                "","")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "0000,000000,000000,0000,000000,000000,000000,00,000000,000000,000000,00,00,0000,000000,000000,000000,00,000000,000000,000000,00,00",
+                sleepIterator, "sleep");
         logger.log(Level.INFO, replaceByteResult);
 
-        jbt = new jaseBT();
-        // Removing indexes 291 - 349 in sleep of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.GETSTATIC, Opcode.GETSTATIC, Opcode.NEW, Opcode.DUP, Opcode.LDC_W,
-                Opcode.INVOKESPECIAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL,
-                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2,
-                Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList(
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"logger:Ljava/util/logging/Logger;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"java/util/logging/Level.WARNING:Ljava/util/logging/Level;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Class,"java/lang/StringBuilder"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"Why is tile for bed at "),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.<init>:(Ljava/lang/String;)V"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileX:()I"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileY:()I"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isOnSurface:()Z"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Z)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String," null?"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.toString:()Ljava/lang/String;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/util/logging/Logger.log:(Ljava/util/logging/Level;Ljava/lang/String;)V")
-        )));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "000000,000000,000000,00,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,000000,000000",
-                getSleepIterator(), "sleep");
-        //<editor-fold desc="Replace code">
+        //<editor-fold desc="sleep() of MethodsItems.class changes.">
             /*
+            Removing indexes 291 - 349 in sleep of javap.exe dump.
             -Removed
                 else {
                     MethodsItems.logger.log(Level.WARNING, "Why is tile for bed at " + target.getTileX() + "," + target.getTileY() + "," + target.isOnSurface() + " null?");
                 }
             */
         //</editor-fold>
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.GETSTATIC, Opcode.GETSTATIC, Opcode.NEW, Opcode.DUP, Opcode.LDC_W,
+                Opcode.INVOKESPECIAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL,
+                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2,
+                Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList(
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"logger:Ljava/util/logging/Logger;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Fieldref,"java/util/logging/Level.WARNING:Ljava/util/logging/Level;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Class,"java/lang/StringBuilder"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"Why is tile for bed at "),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.<init>:(Ljava/lang/String;)V"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileX:()I"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTileY:()I"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,","),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isOnSurface:()Z"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Z)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String," null?"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/lang/StringBuilder.toString:()Ljava/lang/String;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"java/util/logging/Logger.log:(Ljava/util/logging/Level;Ljava/lang/String;)V")
+        )));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "000000,000000,000000,00,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,00,000000,000000,000000,000000,000000,000000",
+                sleepIterator, "sleep");
         logger.log(Level.INFO, replaceByteResult);
         //getSleepAttribute().computeMaxStack();
-        try {
-            getSleepMInfo().rebuildStackMapIf6(pool,cfMethodsItems);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
+        sleepMInfo.rebuildStackMapIf6(pool,cfMethodsItems);
 
-        setMayUseBed(cfItem, "(Lcom/wurmonline/server/creatures/Creature;)Z", "mayUseBed");
-        jbt = new jaseBT();
-        // Removing indexes 10 - 55 in mayUseBed of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_0, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_0, Opcode.INVOKEVIRTUAL, Opcode.INVOKESTATIC,
-                Opcode.ASTORE_2, Opcode.ALOAD_2, Opcode.IFNULL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.GOTO, Opcode.ACONST_NULL, Opcode.ASTORE_3,
-                Opcode.ALOAD_3, Opcode.IFNULL, Opcode.ALOAD_3, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.ALOAD_3, Opcode.INVOKEVIRTUAL, Opcode.IFEQ,
-                Opcode.ICONST_1, Opcode.IRETURN, Opcode.ICONST_0)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"getTilePos:()Lcom/wurmonline/math/TilePos;"),
-                "",
-                jaseBT.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"isOnSurface:()Z"),
-                jaseBT.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/Zones.getTileOrNull:(Lcom/wurmonline/math/TilePos;Z)Lcom/wurmonline/server/zones/VolaTile;"),
-                "","","000a","",
-                jaseBT.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
-                "0004","","","","0013","",
-                jaseBT.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
-                "000c","",
-                jaseBT.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isFinished:()Z"),
-                "0005","","","")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,00,000000,000000,00,00,000000,00,000000,000000,00,00,00,000000,00,000000,000000,00,000000,000000,00,00,04",
-                getMayUseBedIterator(), "mayUseBed");
-        //<editor-fold desc="Replace code">
+        //<editor-fold desc="mayUseBed() of Item.class changes.">
             /*
+            Removing indexes 10 - 55 in mayUseBed of javap.exe dump.
             -Removed
                 final VolaTile vt = Zones.getTileOrNull(this.getTilePos(), this.isOnSurface());
                 final Structure structure = (vt != null) ? vt.getStructure() : null;
@@ -866,81 +740,71 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
             -Always return true for this block "(!ItemSettings.exists(this.getWurmId())"
             */
         //</editor-fold>
+        setMayUseBed(cfItem, "(Lcom/wurmonline/server/creatures/Creature;)Z", "mayUseBed");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_0, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_0, Opcode.INVOKEVIRTUAL, Opcode.INVOKESTATIC,
+                Opcode.ASTORE_2, Opcode.ALOAD_2, Opcode.IFNULL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.GOTO, Opcode.ACONST_NULL, Opcode.ASTORE_3,
+                Opcode.ALOAD_3, Opcode.IFNULL, Opcode.ALOAD_3, Opcode.INVOKEVIRTUAL, Opcode.IFEQ, Opcode.ALOAD_3, Opcode.INVOKEVIRTUAL, Opcode.IFEQ,
+                Opcode.ICONST_1, Opcode.IRETURN, Opcode.ICONST_0)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
+                JDBByteCode.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"getTilePos:()Lcom/wurmonline/math/TilePos;"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"isOnSurface:()Z"),
+                JDBByteCode.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/Zones.getTileOrNull:(Lcom/wurmonline/math/TilePos;Z)Lcom/wurmonline/server/zones/VolaTile;"),
+                "","","000a","",
+                JDBByteCode.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/zones/VolaTile.getStructure:()Lcom/wurmonline/server/structures/Structure;"),
+                "0004","","","","0013","",
+                JDBByteCode.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isTypeHouse:()Z"),
+                "000c","",
+                JDBByteCode.findConstantPoolReference(cpItem,ConstPool.CONST_Methodref,"com/wurmonline/server/structures/Structure.isFinished:()Z"),
+                "0005","","","")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,00,000000,000000,00,00,000000,00,000000,000000,00,00,00,000000,00,000000,000000,00,000000,000000,00,00,04",
+                mayUseBedIterator, "mayUseBed");
         logger.log(Level.INFO, replaceByteResult);
-
         //getMayUseBedAttribute().computeMaxStack();
-        try {
-            getMayUseBedMInfo().rebuildStackMapIf6(pool, cfItem);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
-
+        mayUseBedMInfo.rebuildStackMapIf6(pool, cfItem);
     }
 
-    private void useMagicChestInCartBytecode(ArrayList<Boolean> optionSwitches) {
+    private void useMagicChestInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
         if (!optionSwitches.get(7))
             return;
-        jaseBT jbt;
-        jaseBT jbt1;
+        JDBByteCode jbt;
+        JDBByteCode jbt1;
         String replaceByteResult;
-        setMoveToItem(cfItem, "(Lcom/wurmonline/server/creatures/Creature;JZ)Z", "moveToItem");
-        jbt = new jaseBT();
-        //Removing indexes 58 - 69 in moveToItem of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.SIPUSH, Opcode.IF_ICMPEQ)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("08",
-                jaseBT.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref,"getTemplateId:()I"),
-                "0298","000b")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "0000,000000,000000,000000",
-                getMoveToItemIterator(), "moveToItem");
+
         //<editor-fold desc="Replace code">
             /*
+            Removing indexes 58 - 69 in moveToItem of javap.exe dump.
             Removed-
                 target.getTemplateId() == 664 ||
             */
         //</editor-fold>
+        setMoveToItem(cfItem, "(Lcom/wurmonline/server/creatures/Creature;JZ)Z", "moveToItem");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.SIPUSH, Opcode.IF_ICMPEQ)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("08",
+                JDBByteCode.findConstantPoolReference(cpItem, ConstPool.CONST_Methodref,"getTemplateId:()I"),
+                "0298","000b")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "0000,000000,000000,000000",
+                moveToItemIterator, "moveToItem");
         logger.log(Level.INFO, replaceByteResult);
     }
 
-    private void useForgeInCartBytecode(ArrayList<Boolean> optionSwitches) {
+    private void useForgeInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode, NotFoundException, CannotCompileException {
         if (!optionSwitches.get(8))
             return;
-        jaseBT jbt;
-        jaseBT jbt1;
+        JDBByteCode jbt;
+        JDBByteCode jbt1;
         String replaceByteResult;
-        setStartFire(cfMethodsItems, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;F)Z", "startFire");
-        jbt = new jaseBT();
-        //Removing indexes 110 - 162 in startFire of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFEQ,
-                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LCMP, Opcode.IFEQ, Opcode.LDC_W,
-                Opcode.ICONST_1, Opcode.ANEWARRAY, Opcode.DUP, Opcode.ICONST_0, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.AASTORE,
-                Opcode.INVOKESTATIC, Opcode.ASTORE, Opcode.ALOAD_0, Opcode.INVOKEVIRTUAL, Opcode.ALOAD, Opcode.ICONST_3, Opcode.INVOKEVIRTUAL,
-                Opcode.ICONST_1, Opcode.IRETURN)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTemplate:()Lcom/wurmonline/server/items/ItemTemplate;"),
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/ItemTemplate.isTransportable:()Z"),
-                "002e","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
-                "","0022",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The %s must be on the ground before you can light it."),
-                "","0003","","","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getName:()Ljava/lang/String;"),
-                "",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/utils/StringUtil.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;"),
-                "09","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                "09","",
-                jaseBT.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;B)V"),
-                "","")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,000000,000000,00,000000,00,000000,00,000000,000000,00,000000,00,00,00,000000,00,000000,0000,00,000000,0000,00,000000,00,00",
-                getStartFireIterator(), "startFire");
-        //<editor-fold desc="Replace code">
+
+
+        //<editor-fold desc="startFire() changes">
             /*
+            Removing indexes 110 - 162 in startFire of javap.exe dump.
             Removed-
                 if (target.getTemplate().isTransportable() && target.getTopParent() != target.getWurmId()) {
                     final String message = StringUtil.format("The %s must be on the ground before you can light it.", target.getName());
@@ -949,55 +813,56 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 }
             */
         //</editor-fold>
+        setStartFire(cfMethodsItems, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;F)Z", "startFire");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.INVOKEVIRTUAL, Opcode.IFEQ,
+                Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LCMP, Opcode.IFEQ, Opcode.LDC_W,
+                Opcode.ICONST_1, Opcode.ANEWARRAY, Opcode.DUP, Opcode.ICONST_0, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.AASTORE,
+                Opcode.INVOKESTATIC, Opcode.ASTORE, Opcode.ALOAD_0, Opcode.INVOKEVIRTUAL, Opcode.ALOAD, Opcode.ICONST_3, Opcode.INVOKEVIRTUAL,
+                Opcode.ICONST_1, Opcode.IRETURN)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTemplate:()Lcom/wurmonline/server/items/ItemTemplate;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/ItemTemplate.isTransportable:()Z"),
+                "002e","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
+                "","0022",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_String,"The %s must be on the ground before you can light it."),
+                "","0003","","","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getName:()Ljava/lang/String;"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/utils/StringUtil.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;"),
+                "09","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                "09","",
+                JDBByteCode.findConstantPoolReference(cpMethodsItems,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;B)V"),
+                "","")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,000000,000000,00,000000,00,000000,00,000000,000000,00,000000,00,00,00,000000,00,000000,0000,00,000000,0000,00,000000,00,00",
+                startFireIterator, "startFire");
         logger.log(Level.INFO, replaceByteResult);
         //getStartFireAttribute().computeMaxStack();
-        try {
-            getStartFireMInfo().rebuildStackMapIf6(pool, cfMethodsItems);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
+        startFireMInfo.rebuildStackMapIf6(pool, cfMethodsItems);
 
-
+        //<editor-fold desc="setFire() changes">
+            /*
+            Get the setFire() method in this mod's class, copy it, and paste it over the setFire() in MethodsItems.class.
+             */
+        //</editor-fold>
         setSetFire(cfMethodsItems, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z", "setFire");
-        CtMethod ctmSetFire1 = new CtMethod(CtClass.voidType,"default",new CtClass[]{},ctcMethodsItems);
-        try {
-            ctmSetFire1 = ctcSelf.getMethod("setFire", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        CtMethod ctmSetFire = new CtMethod(CtClass.voidType,"default",new CtClass[]{},ctcMethodsItems);
-        try {
-            ctmSetFire = ctcMethodsItems.getMethod("setFire", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            ctmSetFire.setBody(ctmSetFire1, null);
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
+        CtMethod ctmSetFire1 = ctcSelf.getMethod("setFire", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z");
+        CtMethod ctmSetFire = ctcMethodsItems.getMethod("setFire", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z");
+        ctmSetFire.setBody(ctmSetFire1, null);
 
+        // Change targetIsOnFireCheck() so it always returns false.
+        CtMethod ctmTargetIsOnFireCheck = ctcCargoTransportationMethods.getDeclaredMethod("targetIsOnFireCheck");
+        ctmTargetIsOnFireCheck.setBody("{return false;}");
 
-        CtMethod ctmTargetIsOnFireCheck = new CtMethod(CtClass.voidType,"default",new CtClass[]{},ctcCargoTransportationMethods);
-        try {
-            ctmTargetIsOnFireCheck = ctcCargoTransportationMethods.getDeclaredMethod("targetIsOnFireCheck");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            ctmTargetIsOnFireCheck.setBody("{return false;}");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
-
-
-        CtMethod ctmLoadCargo = new CtMethod(CtClass.voidType,"default",new CtClass[]{},ctcCargoTransportationMethods);
-        try {
-            ctmLoadCargo = ctcCargoTransportationMethods.getMethod("loadCargo",
-                    "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
+        // Alter loadCargo() of cargoTransportationMethods.class to destory fire effect on furnace load.
+        CtMethod ctmLoadCargo = ctcCargoTransportationMethods.getMethod("loadCargo",
+                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z");
         String s = "if ($2.isOnFire()) {";
         s = s.concat("com.wurmonline.server.zones.Zone zone1 = ");
         s = s.concat("com.wurmonline.server.zones.Zones.getZone($1.getTileX(), $1.getTileY(), $1.isOnSurface());");
@@ -1005,21 +870,12 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         s = s.concat("for (int i = 0; i < targetEffects.length; i++) {");
         s = s.concat("if (targetEffects[i].getType() == (short)0) {");
         s = s.concat("zone1.removeEffect(targetEffects[i]);}}}");
-        try {
-            // Insert code right after the "You finish loading..." message.
-            ctmLoadCargo.insertAt(291,"{" + s + "}");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
+        // Insert code right after the "You finish loading..." message.
+        ctmLoadCargo.insertAt(291,"{" + s + "}");
 
-
-        CtMethod ctmUnloadCargo = new CtMethod(CtClass.voidType,"default",new CtClass[]{},ctcCargoTransportationMethods);
-        try {
-            ctmUnloadCargo = ctcCargoTransportationMethods.getMethod("unloadCargo",
-                    "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
+        // Alter unloadCargo() of cargoTransportationMethods.class to create a fire effect on furnace unload.
+        CtMethod ctmUnloadCargo = ctcCargoTransportationMethods.getMethod("unloadCargo",
+                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z");
         s = "if ($2.isOnFire()) {";
         s = s.concat("com.wurmonline.server.zones.Zone zone1 = com.wurmonline.server.zones.Zones#getZone($1.getTileX(), $1.getTileY(), $1.isOnSurface());");
         s = s.concat("com.wurmonline.server.effects.Effect[] targetEffects = $2.getEffects();");
@@ -1040,77 +896,67 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         s = s.concat("else { com.wurmonline.server.effects.Effect effect = ");
         s = s.concat("com.wurmonline.server.effects.EffectFactory#getInstance().createFire($2.getWurmId(), $2.getPosX(), $2.getPosY(), $2.getPosZ(), $1.isOnSurface());");
         s = s.concat("$2.addEffect(effect);}}");
-        try {
-            //Insert after the "%s finishes unloading..." and just before the "return true;".
-            ctmUnloadCargo.insertAt(1312, "{ " + s + " }");
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-        }
+        //Insert after the "%s finishes unloading..." and just before the "return true;".
+        ctmUnloadCargo.insertAt(1312, "{ " + s + " }");
     }
 
-    private void craftWithinCartBytecode(ArrayList<Boolean> optionSwitches) {
+    private void craftWithinCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
         if (!optionSwitches.get(9))
             return;
-        jaseBT jbt;
-        jaseBT jbt1;
+        JDBByteCode jbt;
+        JDBByteCode jbt1;
         String replaceByteResult;
-        setAddCreationWindowOption(cfItemBehaviour,
-                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Ljava/util/List;)V", "addCreationWindowOption");
-        jbt = new jaseBT();
-        //Removing indexes 0 - 4 in addCreationWindowOption of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.IFEQ)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isUseOnGroundOnly:()Z"),
-                "0043")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,000000", getAddCreationWindowOptionIterator(), "addCreationWindowOption");
+
         //<editor-fold desc="Replace code">
             /*
+            Removing indexes 0 - 4 in addCreationWindowOption of javap.exe dump.
             Removed-
                 target.isUseOnGroundOnly() &&
             */
         //</editor-fold>
+        setAddCreationWindowOption(cfItemBehaviour,
+                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Ljava/util/List;)V", "addCreationWindowOption");
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.IFEQ)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.isUseOnGroundOnly:()Z"),
+                "0043")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,000000", addCreationWindowOptionIterator, "addCreationWindowOption");
         logger.log(Level.INFO, replaceByteResult);
 
-
-        jbt = new jaseBT();
-        //Removing indexes 42 - 51 in addCreationWindowOption of javap.exe dump.
-        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
-                Opcode.LCMP, Opcode.IFNE)));
-        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
-                "",
-                jaseBT.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
-                "","0029")));
-        jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,00,000000,00,000000", getAddCreationWindowOptionIterator(), "addCreationWindowOption");
         //<editor-fold desc="Replace code">
             /*
+            Removing indexes 42 - 51 in addCreationWindowOption of javap.exe dump.
             Removed-
                 if (target.getTopParent() == target.getWurmId()) {
             */
         //</editor-fold>
+        jbt = new JDBByteCode();
+        jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL,
+                Opcode.LCMP, Opcode.IFNE)));
+        jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getTopParent:()J"),
+                "",
+                JDBByteCode.findConstantPoolReference(cpItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getWurmId:()J"),
+                "","0029")));
+        jbt.setOpcodeOperand();
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,00,000000,00,000000", addCreationWindowOptionIterator, "addCreationWindowOption");
         logger.log(Level.INFO, replaceByteResult);
         //getAddCreationWindowOptionAttribute().computeMaxStack();
-        try {
-            getAddCreationWindowOptionMInfo().rebuildStackMapIf6(pool, cfItemBehaviour);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
+        addCreationWindowOptionMInfo.rebuildStackMapIf6(pool, cfItemBehaviour);
     }
 
-    private void useAltarInCartBytecode(ArrayList<Boolean> optionSwitches){
+    private void useAltarInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
         if (!optionSwitches.get(10))
             return;
-        jaseBT jbt;
-        jaseBT jbt1;
+        JDBByteCode jbt;
+        JDBByteCode jbt1;
         String replaceByteResult;
-        setPray(cfMethodsReligion,
-                "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z",
-                "pray");
-        //<editor-fold desc="Changes">
+
+        //<editor-fold desc="pray() of MethodsReligion.Class changes.">
             /*
             // lines 136-158 in pray of MethodsReligion removed.
             if (altar.getParentId() != -10L) {
@@ -1119,28 +965,27 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
             }
             */
         //</editor-fold>
-        jbt = new jaseBT();
+        setPray(cfMethodsReligion,
+                "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z",
+                "pray");
+        jbt = new JDBByteCode();
         jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LDC2_W, Opcode.LCMP,
                 Opcode.IFEQ, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1,
                 Opcode.IRETURN)));
         jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Long,"-10"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Long,"-10"),
                 "","000f","",
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_String,"The altar needs to be on the ground to be used."),
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_String,"The altar needs to be on the ground to be used."),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
                 "","")));
         jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,000000,00,000000,00,000000,000000,000000,00,00",getPrayIterator(),"pray");
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,000000,00,000000,00,000000,000000,000000,00,00",prayIterator,"pray");
         logger.log(Level.INFO, replaceByteResult);
 
-
-        setSacrifice(cfMethodsReligion,
-                "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z",
-                "sacrifice");
-        //<editor-fold desc="Changes">
+        //<editor-fold desc="sacrifice() of MethodsReligion.class changes.">
             /*
             // lines 162-184 in sacrifice of MethodsReligion removed.
             if (altar.getParentId() != -10L) {
@@ -1149,29 +994,27 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
             }
             */
         //</editor-fold>
-        jbt = new jaseBT();
+        setSacrifice(cfMethodsReligion,
+                "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z",
+                "sacrifice");
+        jbt = new JDBByteCode();
         jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LDC2_W, Opcode.LCMP,
                 Opcode.IFEQ, Opcode.ALOAD_1, Opcode.INVOKEVIRTUAL, Opcode.LDC_W, Opcode.INVOKEVIRTUAL, Opcode.ICONST_1,
                 Opcode.IRETURN)));
         jbt.setOperandStructure(new ArrayList<>(Arrays.asList("",
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Long,"-10"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Long,"-10"),
                 "","000f","",
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_String,"The altar needs to be on the ground to be used."),
-                jaseBT.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_String,"The altar needs to be on the ground to be used."),
+                JDBByteCode.findConstantPoolReference(cpMethodsReligion,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
                 "","")));
         jbt.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
-                "00,000000,000000,00,000000,00,000000,000000,000000,00,00",getSacrificeIterator(),"sacrifice");
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(),
+                "00,000000,000000,00,000000,00,000000,000000,000000,00,00",sacrificeIterator,"sacrifice");
         logger.log(Level.INFO, replaceByteResult);
 
-
-        setActionDB(cfDomainItemBehaviour,
-                "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;SF)Z",
-                "action");
-
-        //<editor-fold desc="Changes">
+        //<editor-fold desc="action() of DomainItemBehaviour.class changes">
             /*
             Preach
             lines 129-165 in action of DomainItemBehaviour. (Action, Creature, Item, Item, short, float)
@@ -1183,37 +1026,39 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 done = MethodsReligion.holdSermon(performer, target, source, act, counter);
             */
         //</editor-fold>
-        jbt = new jaseBT();
+        setActionDB(cfDomainItemBehaviour,
+                "(Lcom/wurmonline/server/behaviours/Action;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;SF)Z",
+                "action");
+        jbt = new JDBByteCode();
         jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.LDC2_W, Opcode.LCMP,
                 Opcode.IFEQ, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LDC, Opcode.INVOKEVIRTUAL, Opcode.GOTO, Opcode.ALOAD_2,
                 Opcode.ALOAD, Opcode.ALOAD_3, Opcode.ALOAD_1, Opcode.FLOAD, Opcode.INVOKESTATIC, Opcode.ISTORE, Opcode.GOTO)));
         jbt.setOperandStructure(new ArrayList<>(Arrays.asList("04",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Long,"-10"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Long,"-10"),
                 "","000f","",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_String,"The altar needs to be on the ground to be used.").substring(2),
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_String,"The altar needs to be on the ground to be used.").substring(2),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
                 "0098","","04","","","06",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.holdSermon:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/behaviours/Action;F)Z"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.holdSermon:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/behaviours/Action;F)Z"),
                 "07","0089")));
         jbt.setOpcodeOperand();
-        jbt1 = new jaseBT();
+        jbt1 = new JDBByteCode();
         jbt1.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,
                 Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,
                 Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.ALOAD_2,Opcode.ALOAD, Opcode.ALOAD_3, Opcode.ALOAD_1, Opcode.FLOAD,
                 Opcode.INVOKESTATIC, Opcode.ISTORE, Opcode.GOTO)));
         jbt1.setOperandStructure(new ArrayList<>(Arrays.asList("","","","","","","","","","","","","","","","","","","","","","","","",
                 "","04","","","06",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.holdSermon:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/behaviours/Action;F)Z"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.holdSermon:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/behaviours/Action;F)Z"),
                 "07","0089")));
         jbt1.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(), jbt1.getOpcodeOperand(),
-                getActionDBIterator(), "action");
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(), jbt1.getOpcodeOperand(),
+                actionDBIterator, "action");
         logger.log(Level.INFO, replaceByteResult);
 
-
-        //<editor-fold desc="Changes">
+        //<editor-fold desc="action() of DomainItemBehaviour.class changes">
             /*
             recharge
             lines 183-214 in action of DomainItemBehaviour. (Action, Creature, Item, Item, short, float)
@@ -1225,64 +1070,50 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                 done = MethodsReligion.sendRechargeQuestion(performer, source);
             */
         //</editor-fold>
-        jbt = new jaseBT();
+        jbt = new JDBByteCode();
         jbt.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.ALOAD, Opcode.INVOKEVIRTUAL, Opcode.LDC2_W, Opcode.LCMP,
                 Opcode.IFEQ, Opcode.ALOAD_2, Opcode.INVOKEVIRTUAL, Opcode.LDC, Opcode.INVOKEVIRTUAL, Opcode.GOTO, Opcode.ALOAD_2,
                 Opcode.ALOAD_3, Opcode.INVOKESTATIC, Opcode.ISTORE, Opcode.GOTO)));
         jbt.setOperandStructure(new ArrayList<>(Arrays.asList("04",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Long,"-10"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/items/Item.getParentId:()J"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Long,"-10"),
                 "","000f","",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_String,"The altar needs to be on the ground to be used.").substring(2),
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Creature.getCommunicator:()Lcom/wurmonline/server/creatures/Communicator;"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_String,"The altar needs to be on the ground to be used.").substring(2),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/creatures/Communicator.sendNormalServerMessage:(Ljava/lang/String;)V"),
                 "0062","","",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.sendRechargeQuestion:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.sendRechargeQuestion:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z"),
                 "07","0058")));
         jbt.setOpcodeOperand();
-        jbt1 = new jaseBT();
+        jbt1 = new JDBByteCode();
         jbt1.setOpCodeStructure(new ArrayList<>(Arrays.asList(Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,
                 Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,
                 Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.NOP,Opcode.ALOAD_2,
                 Opcode.ALOAD_3, Opcode.INVOKESTATIC, Opcode.ISTORE, Opcode.GOTO)));
         jbt1.setOperandStructure(new ArrayList<>(Arrays.asList("","","","","","","","","","","","","","","","","","","","","","","","",
                 "","",
-                jaseBT.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.sendRechargeQuestion:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z"),
+                JDBByteCode.findConstantPoolReference(cpDomainItemBehaviour,ConstPool.CONST_Methodref,"com/wurmonline/server/behaviours/MethodsReligion.sendRechargeQuestion:(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z"),
                 "07","0058")));
         jbt1.setOpcodeOperand();
-        replaceByteResult = jaseBT.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(), jbt1.getOpcodeOperand(),
-                getActionDBIterator(), "action");
+        replaceByteResult = JDBByteCode.byteCodeFindReplace(jbt.getOpcodeOperand(), jbt.getOpcodeOperand(), jbt1.getOpcodeOperand(),
+                actionDBIterator, "action");
         logger.log(Level.INFO, replaceByteResult);
     }
     //</editor-fold>
 
     //<editor-fold desc="Reflection methods section.">
-    private int useBedReflection(ArrayList<Boolean> optionSwitches){
+    private int useBedReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
         int bedCnt = 0;
         if (!optionSwitches.get(0))
             return bedCnt;
-        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
-        try {
-            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
-                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
         for (ItemTemplate template : fieldTemplates.values()) {
             Integer templateId = template.getTemplateId();
-            Field fieldUseOnGroundOnly = EMPTY_FIELD;
-            try {
-                fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
+            Field fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
             if (templateId == ItemList.bedStandard || templateId == ItemList.canopyBed) {
                 if (template.isUseOnGroundOnly()) {
-                    try {
-                        ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
+                    ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
                     bedCnt++;
                 }
             }
@@ -1290,65 +1121,35 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         return bedCnt;
     }
 
-    private int boatInCartReflection(ArrayList<Boolean> optionSwitches){
+    private int boatInCartReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
         int boatInCartCnt = 0;
         if (!optionSwitches.get(1))
             return boatInCartCnt;
-        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
-        try {
-            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
-                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
         for (ItemTemplate template : fieldTemplates.values()) {
             Integer templateId = template.getTemplateId();
-
-            Field fieldIsTransportable = EMPTY_FIELD;
-            try {
-                fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
+            Field fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
             if (template.isFloating()) {
-                try {
-                    ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+                ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
                 boatInCartCnt++;
             }
         }
         return boatInCartCnt;
     }
 
-    private int loadAltarReflection(ArrayList<Boolean> optionSwitches){
+    private int loadAltarReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
         int altarCnt = 0;
         if (!optionSwitches.get(2))
             return altarCnt;
-        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
-        try {
-            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
-                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+            ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
         for (ItemTemplate template : fieldTemplates.values()) {
             Integer templateId = template.getTemplateId();
-
-            Field fieldIsTransportable = EMPTY_FIELD;
-            try {
-                fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
+            Field fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
             if (templateId == ItemList.altarWood || templateId == ItemList.altarGold || templateId == ItemList.altarSilver ||
                     templateId == ItemList.altarStone) {
-                try {
-                    ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+                ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
                 altarCnt++;
             }
 
@@ -1356,64 +1157,35 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         return altarCnt;
     }
 
-    private int loadOtherReflection(ArrayList<Boolean> optionSwitches){
+    private int loadOtherReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
         int otherCnt = 0;
         if (!optionSwitches.get(3))
             return otherCnt;
-        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
-        try {
-            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
-                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
         for (ItemTemplate template : fieldTemplates.values()) {
             Integer templateId = template.getTemplateId();
-            Field fieldIsTransportable = EMPTY_FIELD;
-            try {
-                fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
+            Field fieldIsTransportable = ReflectionUtil.getField(ItemTemplate.class, "isTransportable");
             if (templateId == ItemList.trashBin) {
-                try {
-                    ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+                ReflectionUtil.setPrivateField(template, fieldIsTransportable, Boolean.TRUE);
                 otherCnt++;
             }
         }
         return otherCnt;
     }
 
-    private int craftWithinCartReflection(ArrayList<Boolean> optionSwitches){
+    private int craftWithinCartReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
         int craftWithinCartCnt = 0;
         if (!optionSwitches.get(4))
             return craftWithinCartCnt;
-        Map<Integer, ItemTemplate> fieldTemplates = new HashMap<>();
-        try {
-            fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
-                    ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
+                ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
         for (ItemTemplate template : fieldTemplates.values()) {
             Integer templateId = template.getTemplateId();
-
-            Field fieldUseOnGroundOnly = EMPTY_FIELD;
-            try {
-                fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
+            Field fieldUseOnGroundOnly = ReflectionUtil.getField(ItemTemplate.class, "useOnGroundOnly");
             if (templateId == ItemList.loom || templateId == ItemList.spinningWheel) {
                 if (template.isUseOnGroundOnly()) {
-                    try {
-                        ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
+                    ReflectionUtil.setPrivateField(template, fieldUseOnGroundOnly, Boolean.FALSE);
                     craftWithinCartCnt++;
                 }
             }
@@ -1427,384 +1199,294 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     Inserting gaps will always break other iterators pointing to the same attribute.
     CodeAttribute and MethodInfo also cause problems when multiple objects exist representing the same Wurm method.
     Use one class wide object for each CodeAttribute, CodeIterator, MethodInfo for all Wurm methods.
-    The following section are get and set methods to achieve this.
+    The following section sets this up.
     */
     //<editor-fold desc="Getter and Setter for CodeIterator, CodeAttribute, methodInfo.">
     private void setActionDB(ClassFile cf, String desc, String name){
-        if (this.actionDBMInfo == null || this.actionDBIterator == null || this.actionDBAttribute == null){
+        if (actionDBMInfo == null || actionDBIterator == null || actionDBAttribute == null){
             for (List a : new List[]{cf.getMethods()}){
                 for (Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.actionDBMInfo = MInfo;
+                        actionDBMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.actionDBMInfo == null){
+            if (actionDBMInfo == null){
                 throw new NullPointerException();
             }
-            this.actionDBAttribute = this.actionDBMInfo.getCodeAttribute();
-            this.actionDBIterator = this.actionDBAttribute.iterator();
+            actionDBAttribute = actionDBMInfo.getCodeAttribute();
+            actionDBIterator = actionDBAttribute.iterator();
         }
     }
-
-    private CodeIterator getActionDBIterator(){return this.actionDBIterator;}
-
-    public CodeAttribute getActionDBAttribute(){return this.actionDBAttribute;}
-
-    public MethodInfo getActionDBMInfo(){return this.actionDBMInfo;}
 
     private void setSacrifice(ClassFile cf, String desc, String name){
-        if (this.sacrificeMInfo == null || this.sacrificeIterator == null || this.sacrificeAttribute == null){
+        if (sacrificeMInfo == null || sacrificeIterator == null || sacrificeAttribute == null){
             for (List a : new List[]{cf.getMethods()}){
                 for (Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.sacrificeMInfo = MInfo;
+                        sacrificeMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.sacrificeMInfo == null){
+            if (sacrificeMInfo == null){
                 throw new NullPointerException();
             }
-            this.sacrificeAttribute = this.sacrificeMInfo.getCodeAttribute();
-            this.sacrificeIterator = this.sacrificeAttribute.iterator();
+            sacrificeAttribute = sacrificeMInfo.getCodeAttribute();
+            sacrificeIterator = sacrificeAttribute.iterator();
         }
     }
-
-    private CodeIterator getSacrificeIterator(){return this.sacrificeIterator;}
-
-    public CodeAttribute getSacrificeAttribute(){return this.sacrificeAttribute;}
-
-    public MethodInfo getSacrificeMInfo(){return this.sacrificeMInfo;}
 
     private void setPray(ClassFile cf, String desc, String name){
-        if (this.prayMInfo == null || this.prayIterator == null || this.prayAttribute == null){
+        if (prayMInfo == null || prayIterator == null || prayAttribute == null){
             for (List a : new List[]{cf.getMethods()}){
                 for (Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.prayMInfo = MInfo;
+                        prayMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.prayMInfo == null){
+            if (prayMInfo == null){
                 throw new NullPointerException();
             }
-            this.prayAttribute = this.prayMInfo.getCodeAttribute();
-            this.prayIterator = this.prayAttribute.iterator();
+            prayAttribute = prayMInfo.getCodeAttribute();
+            prayIterator = prayAttribute.iterator();
         }
     }
-
-    private CodeIterator getPrayIterator(){return this.prayIterator;}
-
-    public CodeAttribute getPrayAttribute(){return this.prayAttribute;}
-
-    public MethodInfo getPrayMInfo(){return this.prayMInfo;}
 
     private void setAddBedOptions(ClassFile cf, String desc, String name) {
-        if (this.addBedOptionsMInfo == null || this.addBedOptionsIterator == null || this.addBedOptionsAttribute == null) {
+        if (addBedOptionsMInfo == null || addBedOptionsIterator == null || addBedOptionsAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.addBedOptionsMInfo = MInfo;
+                        addBedOptionsMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.addBedOptionsMInfo == null){
+            if (addBedOptionsMInfo == null){
                 throw new NullPointerException();
             }
-            this.addBedOptionsAttribute = this.addBedOptionsMInfo.getCodeAttribute();
-            this.addBedOptionsIterator = this.addBedOptionsAttribute.iterator();
+            addBedOptionsAttribute = addBedOptionsMInfo.getCodeAttribute();
+            addBedOptionsIterator = addBedOptionsAttribute.iterator();
         }
     }
-
-    private CodeIterator getAddBedOptionsIterator(){return this.addBedOptionsIterator;}
-
-    public CodeAttribute getAddBedOptionsAttribute(){return this.addBedOptionsAttribute;}
-
-    private MethodInfo getAddBedOptionsMInfo(){return this.addBedOptionsMInfo;}
 
     private void setMoveToItem(ClassFile cf, String desc, String name) {
-        if (this.moveToItemMInfo == null || this.moveToItemIterator == null || this.moveToItemAttribute == null) {
+        if (moveToItemMInfo == null || moveToItemIterator == null || moveToItemAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.moveToItemMInfo = MInfo;
+                        moveToItemMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.moveToItemMInfo == null){
+            if (moveToItemMInfo == null){
                 throw new NullPointerException();
             }
-            this.moveToItemAttribute = this.moveToItemMInfo.getCodeAttribute();
-            this.moveToItemIterator = this.moveToItemAttribute.iterator();
+            moveToItemAttribute = moveToItemMInfo.getCodeAttribute();
+            moveToItemIterator = moveToItemAttribute.iterator();
         }
     }
-
-    private CodeIterator getMoveToItemIterator() {return this.moveToItemIterator;}
-
-    public CodeAttribute getMoveToItemAttribute() {return this.moveToItemAttribute;}
-
-    public MethodInfo getMoveToItemMInfo() {return this.moveToItemMInfo;}
 
     public void setLoadCargo(ClassFile cf, String desc, String name) {
-        if (this.loadCargoMInfo == null || this.loadCargoIterator == null || this.loadCargoAttribute == null) {
+        if (loadCargoMInfo == null || loadCargoIterator == null || loadCargoAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.loadCargoMInfo = MInfo;
+                        loadCargoMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.loadCargoMInfo == null){
+            if (loadCargoMInfo == null){
                 throw new NullPointerException();
             }
-            this.loadCargoAttribute = this.loadCargoMInfo.getCodeAttribute();
-            this.loadCargoIterator = this.loadCargoAttribute.iterator();
+            loadCargoAttribute = loadCargoMInfo.getCodeAttribute();
+            loadCargoIterator = loadCargoAttribute.iterator();
         }
     }
-
-    public CodeIterator getLoadCargoIterator() {return this.loadCargoIterator;}
-
-    public CodeAttribute getLoadCargoAttribute() {return this.loadCargoAttribute;}
-
-    public MethodInfo getLoadCargoMInfo() {return this.loadCargoMInfo;}
 
     public void setUnloadCargo(ClassFile cf, String desc, String name) {
-        if (this.unloadCargoMInfo == null || this.unloadCargoIterator == null || this.unloadCargoAttribute == null) {
+        if (unloadCargoMInfo == null || unloadCargoIterator == null || unloadCargoAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.unloadCargoMInfo = MInfo;
+                        unloadCargoMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.unloadCargoMInfo == null){
+            if (unloadCargoMInfo == null){
                 throw new NullPointerException();
             }
-            this.unloadCargoAttribute = this.unloadCargoMInfo.getCodeAttribute();
-            this.unloadCargoIterator = this.unloadCargoAttribute.iterator();
+            unloadCargoAttribute = unloadCargoMInfo.getCodeAttribute();
+            unloadCargoIterator = unloadCargoAttribute.iterator();
         }
     }
-
-    public CodeIterator getUnloadCargoIterator() {return this.unloadCargoIterator;}
-
-    public CodeAttribute getUnloadCargoAttribute() {return this.unloadCargoAttribute;}
-
-    public MethodInfo getUnloadCargoMInfo() {return  this.unloadCargoMInfo;}
 
     private void setPerformerIsNotOnATransportVehicle(ClassFile cf, String desc, String name) {
-        if (this.performerIsNotOnATransportVehicleMInfo == null || this.performerIsNotOnATransportVehicleIterator == null ||
-                this.performerIsNotOnATransportVehicleAttribute == null) {            for (List a : new List[]{cf.getMethods()}){
+        if (performerIsNotOnATransportVehicleMInfo == null || performerIsNotOnATransportVehicleIterator == null ||
+                performerIsNotOnATransportVehicleAttribute == null) {            for (List a : new List[]{cf.getMethods()}){
             for(Object b : a){
                 MethodInfo MInfo = (MethodInfo) b;
                 if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                    this.performerIsNotOnATransportVehicleMInfo = MInfo;
+                    performerIsNotOnATransportVehicleMInfo = MInfo;
                     break;
                 }
             }
         }
-            if (this.performerIsNotOnATransportVehicleMInfo == null){
+            if (performerIsNotOnATransportVehicleMInfo == null){
                 throw new NullPointerException();
             }
-            this.performerIsNotOnATransportVehicleAttribute = this.performerIsNotOnATransportVehicleMInfo.getCodeAttribute();
-            this.performerIsNotOnATransportVehicleIterator = this.performerIsNotOnATransportVehicleAttribute.iterator();
+            performerIsNotOnATransportVehicleAttribute = performerIsNotOnATransportVehicleMInfo.getCodeAttribute();
+            performerIsNotOnATransportVehicleIterator = performerIsNotOnATransportVehicleAttribute.iterator();
         }
     }
-
-    private CodeIterator getPerformerIsNotOnATransportVehicleIterator() {return this.performerIsNotOnATransportVehicleIterator;}
-
-    public CodeAttribute getPerformerIsNotOnATransportVehicleAttribute() {return this.performerIsNotOnATransportVehicleAttribute;}
-
-    public MethodInfo getPerformerIsNotOnATransportVehicleMInfo() {return this.performerIsNotOnATransportVehicleMInfo;}
 
     private void setGetLoadUnloadActions(ClassFile cf, String desc, String name) {
-        if (this.getLoadUnloadActionsMInfo == null || this.getLoadUnloadActionsIterator == null ||
-                this.getLoadUnloadActionsAttribute == null) {
+        if (getLoadUnloadActionsMInfo == null || getLoadUnloadActionsIterator == null ||
+                getLoadUnloadActionsAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
             for(Object b : a){
                 MethodInfo MInfo = (MethodInfo) b;
                 if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                    this.getLoadUnloadActionsMInfo = MInfo;
+                    getLoadUnloadActionsMInfo = MInfo;
                     break;
                 }
             }
         }
-            if (this.getLoadUnloadActionsMInfo == null){
+            if (getLoadUnloadActionsMInfo == null){
                 throw new NullPointerException();
             }
-            this.getLoadUnloadActionsAttribute = this.getLoadUnloadActionsMInfo.getCodeAttribute();
-            this.getLoadUnloadActionsIterator = this.getLoadUnloadActionsAttribute.iterator();
+            getLoadUnloadActionsAttribute = getLoadUnloadActionsMInfo.getCodeAttribute();
+            getLoadUnloadActionsIterator = getLoadUnloadActionsAttribute.iterator();
         }
     }
-
-    private CodeIterator getGetLoadUnloadActionsIterator() {return this.getLoadUnloadActionsIterator;}
-
-    public CodeAttribute getGetLoadUnloadActionsAttribute() {return this.getLoadUnloadActionsAttribute;}
-
-    private MethodInfo getGetLoadUnloadActionsMInfo() {return this.getLoadUnloadActionsMInfo;}
 
     private void setAskSleep(ClassFile cf, String desc, String name) {
-        if (this.askSleepMInfo == null || this.askSleepIterator == null || this.askSleepAttribute == null) {
+        if (askSleepMInfo == null || askSleepIterator == null || askSleepAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.askSleepMInfo = MInfo;
+                        askSleepMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.askSleepMInfo == null){
+            if (askSleepMInfo == null){
                 throw new NullPointerException();
             }
-            this.askSleepAttribute = this.askSleepMInfo.getCodeAttribute();
-            this.askSleepIterator = this.askSleepAttribute.iterator();
+            askSleepAttribute = askSleepMInfo.getCodeAttribute();
+            askSleepIterator = askSleepAttribute.iterator();
         }
     }
-
-    private CodeIterator getAskSleepIterator() {return this.askSleepIterator;}
-
-    public CodeAttribute getAskSleepAttribute() {return this.askSleepAttribute;}
-
-    private MethodInfo getAskSleepMInfo() {return this.askSleepMInfo;}
 
     private void setSleep(ClassFile cf, String desc, String name) {
-        if (this.sleepMInfo == null || this.sleepIterator == null || this.sleepAttribute == null) {
+        if (sleepMInfo == null || sleepIterator == null || sleepAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.sleepMInfo = MInfo;
+                        sleepMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.sleepMInfo == null){
+            if (sleepMInfo == null){
                 throw new NullPointerException();
             }
-            this.sleepAttribute = this.sleepMInfo.getCodeAttribute();
-            this.sleepIterator = this.sleepAttribute.iterator();
+            sleepAttribute = sleepMInfo.getCodeAttribute();
+            sleepIterator = sleepAttribute.iterator();
         }
     }
-
-    private CodeIterator getSleepIterator() {return this.sleepIterator;}
-
-    public CodeAttribute getSleepAttribute() {return this.sleepAttribute;}
-
-    private MethodInfo getSleepMInfo() {return this.sleepMInfo;}
 
     private void setMayUseBed(ClassFile cf, String desc, String name){
-        if (this.mayUseBedMInfo == null || this.mayUseBedIterator == null || this.mayUseBedAttribute == null) {
+        if (mayUseBedMInfo == null || mayUseBedIterator == null || mayUseBedAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.mayUseBedMInfo = MInfo;
+                        mayUseBedMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.mayUseBedMInfo == null){
+            if (mayUseBedMInfo == null){
                 throw new NullPointerException();
             }
-            this.mayUseBedAttribute = this.mayUseBedMInfo.getCodeAttribute();
-            this.mayUseBedIterator = this.mayUseBedAttribute.iterator();
+            mayUseBedAttribute = mayUseBedMInfo.getCodeAttribute();
+            mayUseBedIterator = mayUseBedAttribute.iterator();
         }
     }
-
-    private CodeIterator getMayUseBedIterator() {return this.mayUseBedIterator;}
-
-    public CodeAttribute getMayUseBedAttribute() {return this.mayUseBedAttribute;}
-
-    private MethodInfo getMayUseBedMInfo() { return this.mayUseBedMInfo;}
 
     private void setStartFire(ClassFile cf, String desc, String name){
-        if (this.startFireMInfo == null || this.startFireIterator == null || this.startFireAttribute == null) {
+        if (startFireMInfo == null || startFireIterator == null || startFireAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.startFireMInfo = MInfo;
+                        startFireMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.startFireMInfo == null){
+            if (startFireMInfo == null){
                 throw new NullPointerException();
             }
-            this.startFireAttribute = this.startFireMInfo.getCodeAttribute();
-            this.startFireIterator = this.startFireAttribute.iterator();
+            startFireAttribute = startFireMInfo.getCodeAttribute();
+            startFireIterator = startFireAttribute.iterator();
         }
     }
-
-    private CodeIterator getStartFireIterator() {return this.startFireIterator;}
-
-    public CodeAttribute getStartFireAttribute() {return this.startFireAttribute;}
-
-    private MethodInfo getStartFireMInfo() {return this.startFireMInfo;}
 
     private void setSetFire(ClassFile cf, String desc, String name){
-        if (this.setFireMInfo == null || this.setFireIterator == null || this.setFireAttribute == null) {
+        if (setFireMInfo == null || setFireIterator == null || setFireAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.setFireMInfo = MInfo;
+                        setFireMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.setFireMInfo == null){
+            if (setFireMInfo == null){
                 throw new NullPointerException();
             }
-            this.setFireAttribute = this.setFireMInfo.getCodeAttribute();
-            this.setFireIterator = this.setFireAttribute.iterator();
+            setFireAttribute = setFireMInfo.getCodeAttribute();
+            setFireIterator = setFireAttribute.iterator();
         }
     }
-
-    public CodeIterator getSetFireIterator() {return this.setFireIterator;}
-
-    public CodeAttribute getSetFireAttribute() {return this.setFireAttribute;}
-
-    public MethodInfo getSetFireMInfo() {return this.setFireMInfo;}
 
     private void setAddCreationWindowOption(ClassFile cf, String desc, String name){
-        if (this.addCreationWindowOptionMInfo == null || this.addCreationWindowOptionIterator == null || this.addCreationWindowOptionAttribute == null) {
+        if (addCreationWindowOptionMInfo == null || addCreationWindowOptionIterator == null || addCreationWindowOptionAttribute == null) {
             for (List a : new List[]{cf.getMethods()}){
                 for(Object b : a){
                     MethodInfo MInfo = (MethodInfo) b;
                     if (Objects.equals(MInfo.getDescriptor(), desc) && Objects.equals(MInfo.getName(), name)){
-                        this.addCreationWindowOptionMInfo = MInfo;
+                        addCreationWindowOptionMInfo = MInfo;
                         break;
                     }
                 }
             }
-            if (this.addCreationWindowOptionMInfo == null){
+            if (addCreationWindowOptionMInfo == null){
                 throw new NullPointerException();
             }
-            this.addCreationWindowOptionAttribute = this.addCreationWindowOptionMInfo.getCodeAttribute();
-            this.addCreationWindowOptionIterator = this.addCreationWindowOptionAttribute.iterator();
+            addCreationWindowOptionAttribute = addCreationWindowOptionMInfo.getCodeAttribute();
+            addCreationWindowOptionIterator = addCreationWindowOptionAttribute.iterator();
         }
     }
-
-    private CodeIterator getAddCreationWindowOptionIterator() {return this.addCreationWindowOptionIterator;}
-
-    public CodeAttribute getAddCreationWindowOptionAttribute() {return this.addCreationWindowOptionAttribute;}
-
-    private MethodInfo getAddCreationWindowOptionMInfo() {return this.addCreationWindowOptionMInfo;}
     //</editor-fold>
 }
 
