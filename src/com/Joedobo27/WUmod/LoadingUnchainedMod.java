@@ -6,6 +6,8 @@ import com.wurmonline.server.effects.EffectFactory;
 import com.wurmonline.server.items.*;
 import javassist.*;
 import javassist.bytecode.*;
+import javassist.expr.ExprEditor;
+import javassist.expr.MethodCall;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
@@ -17,7 +19,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.spi.CalendarNameProvider;
 
 
 @SuppressWarnings("unused")
@@ -26,21 +27,23 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     private static Logger logger = Logger.getLogger(LoadingUnchainedMod.class.getName());
 
     //<editor-fold desc="Configure controls.">
-    private boolean loadAnyBin = true;
-    private boolean moveItemsIntoBinWithinContainer = false;
-    private boolean useCustomProximity = false;
-    private int loadProximityRequired = 4;
-    private boolean useCustomLoadTime = false;
-    private int loadDurationTime = 100;
-    private boolean loadIntoDragged = true;
-    private boolean boatInCart = false;
-    private boolean useBedInCart = false;
-    private boolean useMagicChestInCart = false;
-    private boolean useForgeInCart = false;
-    private boolean craftWithinCart = false;
-    private boolean loadAltar = false;
-    private boolean useAltarInCart = false;
-    private boolean loadOther = false;
+    private static boolean loadAnyBin = true;
+    private static boolean moveItemsIntoBinWithinContainer = false;
+    private static boolean useCustomProximity = false;
+    private static int loadProximityRequired = 4;
+    private static boolean useCustomLoadTime = false;
+    private static int loadDurationTime = 100;
+    private static boolean loadIntoDragged = true;
+    private static boolean boatInCart = false;
+    private static boolean useBedInCart = false;
+    private static boolean useMagicChestInCart = false;
+    private static boolean useForgeInCart = false;
+    private static boolean craftWithinCart = false;
+    private static boolean loadAltar = false;
+    private static boolean useAltarInCart = false;
+    private static boolean loadOther = false;
+
+    private static boolean[] optionSwitches;
     //</editor-fold>
 
     //<editor-fold desc="Bytecode objects">
@@ -144,18 +147,20 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         loadAltar = Boolean.valueOf(properties.getProperty("loadAltar", Boolean.toString(loadAltar)));
         useAltarInCart = Boolean.valueOf(properties.getProperty("useAltarInCart", Boolean.toString(useAltarInCart)));
         loadOther = Boolean.valueOf(properties.getProperty("loadOther", Boolean.toString(loadOther)));
+
+        optionSwitches = new boolean[]{loadAnyBin, moveItemsIntoBinWithinContainer, useCustomProximity, useCustomLoadTime,
+                loadIntoDragged, boatInCart, useBedInCart, useMagicChestInCart,useForgeInCart, craftWithinCart, loadAltar, useAltarInCart,
+                loadOther};
     }
 
     @Override
     public void onServerStarted() {
-        ArrayList<Boolean> optionSwitches = new ArrayList<>(Arrays.asList(useBedInCart, boatInCart, loadAltar, loadOther,
-                craftWithinCart));
         try {
-            int bedCnt = useBedReflection(optionSwitches);
-            int boatInCartCnt = boatInCartReflection(optionSwitches);
-            int altarCnt = loadAltarReflection(optionSwitches);
-            int otherCnt = loadOtherReflection(optionSwitches);
-            int craftWithinCartCnt = craftWithinCartReflection(optionSwitches);
+            int bedCnt = useBedReflection();
+            int boatInCartCnt = boatInCartReflection();
+            int altarCnt = loadAltarReflection();
+            int otherCnt = loadOtherReflection();
+            int craftWithinCartCnt = craftWithinCartReflection();
 
             logger.log(Level.INFO, "useBedInCart: " + bedCnt);
             logger.log(Level.INFO, "boatInCart: " + boatInCartCnt);
@@ -181,20 +186,18 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
             setJSDomainItemBehaviour();
             setJSActions();
 
-            ArrayList<Boolean> optionSwitches = new ArrayList<>(Arrays.asList(loadAnyBin, moveItemsIntoBinWithinContainer,
-                    useCustomLoadTime, useCustomProximity, loadIntoDragged, boatInCart, useBedInCart, useMagicChestInCart,
-                    useForgeInCart, craftWithinCart, useAltarInCart));
-            loadAnyBinBytecode(optionSwitches);
-            moveItemsIntoBinWithinContainerBytecode(optionSwitches);
-            useCustomLoadTimeBytecode(optionSwitches);
-            useCustomProximityBytecode(optionSwitches);
-            loadIntoDraggedBytecode(optionSwitches);
-            boatInCartBytecode(optionSwitches);
-            useBedInCartBytecode(optionSwitches);
-            useMagicChestInCartBytecode(optionSwitches);
-            useForgeInCartBytecode(optionSwitches);
-            craftWithinCartBytecode(optionSwitches);
-            useAltarInCartBytecode(optionSwitches);
+            loadFromWithinContainers();
+            loadAnyBinBytecode();
+            moveItemsIntoBinWithinContainerBytecode();
+            useCustomLoadTimeBytecode();
+            useCustomProximityBytecode();
+            loadIntoDraggedBytecode();
+            menuAddLoadUnload();
+            useBedInCartBytecode();
+            useMagicChestInCartBytecode();
+            useForgeInCartBytecode();
+            craftWithinCartBytecode();
+            useAltarInCartBytecode();
         } catch (BadBytecode | NotFoundException | CannotCompileException e) {
             e.printStackTrace();
         }
@@ -265,17 +268,25 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         ctcActions = pool.get("com.wurmonline.server.behaviours.Actions");
     }
 
-    private void loadAnyBinBytecode(ArrayList<Boolean> optionSwitches) throws NotFoundException, CannotCompileException {
-        if (!optionSwitches.get(0))
+    private void loadFromWithinContainers() throws NotFoundException, CannotCompileException {
+        CtMethod cmTargetIsNotOnTheGround = ctcCargoTransportationMethods.getMethod("targetIsNotOnTheGround",
+                "(Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/creatures/Creature;Z)Z");
+        cmTargetIsNotOnTheGround.setBody("retrun false;");
+    }
+
+    private void loadAnyBinBytecode() throws NotFoundException, CannotCompileException {
+        int LOAD_ANY_BIN = 0;
+        if (!optionSwitches[LOAD_ANY_BIN])
             return;
         // Alter targetIsNotEmptyContainerCheck() of cargoTransportationMethods.class to always return false.
         CtMethod ctmTargetIsNotEmptyContainerCheck = ctcCargoTransportationMethods.getMethod("targetIsNotEmptyContainerCheck",
                 "(Lcom/wurmonline/server/items/Item;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;Z)Z");
-        ctmTargetIsNotEmptyContainerCheck.setBody("{return false;}");
+        ctmTargetIsNotEmptyContainerCheck.setBody("return false;");
     }
 
-    private void moveItemsIntoBinWithinContainerBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
-        if (!optionSwitches.get(1))
+    private void moveItemsIntoBinWithinContainerBytecode() throws BadBytecode {
+        int MOVE_ITEMS = 1; // MOVE_ITEMS_INTO_BIN_WITHIN_CONTAINER
+        if (!optionSwitches[MOVE_ITEMS])
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
@@ -327,26 +338,29 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         logger.log(Level.INFO, replaceByteResult);
     }
 
-    private void useCustomLoadTimeBytecode(ArrayList<Boolean> optionSwitches)throws NotFoundException, CannotCompileException {
-        if (!optionSwitches.get(2))
-            return;
-        // alter getLoadUnloadActionTime() of Actions.class to always return the properties value in loadDurationTime.
-        CtMethod cmGetLoadUnloadActionTime = ctcActions.getMethod("getLoadUnloadActionTime", "(Lcom/wurmonline/server/creatures/Creature;)I");
-        cmGetLoadUnloadActionTime.setBody("{ return " + loadDurationTime + "; }");
-        logger.log(Level.INFO, "Custom load time set.");
-    }
-
-    private void useCustomProximityBytecode(ArrayList<Boolean> optionSwitches) throws  NotFoundException, CannotCompileException {
-        if (!optionSwitches.get(3))
+    private void useCustomProximityBytecode() throws  NotFoundException, CannotCompileException {
+        int USE_CUSTOM_PROXIMITY = 2;
+        if (!optionSwitches[USE_CUSTOM_PROXIMITY])
             return;
         // alter getLoadActionDistance() of  cargoTransportationMethods.class to return properties value in loadProximityRequired.
         CtMethod ctmGetLoadActionDistance = ctcCargoTransportationMethods.getMethod("getLoadActionDistance",
                 "(Lcom/wurmonline/server/items/Item;)I");
-        ctmGetLoadActionDistance.setBody("{return " + loadProximityRequired + ";}");
+        ctmGetLoadActionDistance.setBody("return " + loadProximityRequired + ";");
     }
 
-    private void loadIntoDraggedBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode, NotFoundException, CannotCompileException {
-        if (!optionSwitches.get(4))
+    private void useCustomLoadTimeBytecode()throws NotFoundException, CannotCompileException {
+        int USE_CUSTOM_LOADTIME = 3;
+        if (!optionSwitches[USE_CUSTOM_LOADTIME])
+            return;
+        // alter getLoadUnloadActionTime() of Actions.class to always return the properties value in loadDurationTime.
+        CtMethod cmGetLoadUnloadActionTime = ctcActions.getMethod("getLoadUnloadActionTime", "(Lcom/wurmonline/server/creatures/Creature;)I");
+        cmGetLoadUnloadActionTime.setBody("return " + loadDurationTime + ";");
+        logger.log(Level.INFO, "Custom load time set.");
+    }
+
+    private void loadIntoDraggedBytecode() throws BadBytecode, NotFoundException, CannotCompileException {
+        int LOAD_INTO_DRAGGED = 4;
+        if (!optionSwitches[LOAD_INTO_DRAGGED])
             return;
         String replaceByteResult;
 
@@ -359,54 +373,65 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         // performerIsNotOnAVehicle() of cargoTransportationMethods always return false.
         CtMethod ctmPerformerIsNotOnAVehicle = ctcCargoTransportationMethods.getMethod("performerIsNotOnAVehicle",
                 "(Lcom/wurmonline/server/creatures/Creature;)Z");
-        ctmPerformerIsNotOnAVehicle.setBody("{return false;}");
+        ctmPerformerIsNotOnAVehicle.setBody("return false;");
 
         // performerIsNotSeatedOnAVehicle() of cargoTransportationMethods always return false.
         CtMethod ctmPerformerIsNotSeatedOnAVehicle = ctcCargoTransportationMethods.getMethod("performerIsNotSeatedOnAVehicle",
                 "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/behaviours/Seat;)Z");
-        ctmPerformerIsNotSeatedOnAVehicle.setBody("{return false;}");
+        ctmPerformerIsNotSeatedOnAVehicle.setBody("return false;");
+
+        CtMethod cmLoadCargo = ctcCargoTransportationMethods.getMethod("loadCargo",
+                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z");
+        cmLoadCargo.instrument(
+                new ExprEditor() {
+                    public void edit(MethodCall m) throws CannotCompileException
+                    {
+                        if (m.getClassName().equals("Vehicles") && m.getMethodName().equals("getVehicleForId")) {
+                            String s = "";
+                            s += "java.lang.Long vehicle; if (performer.getVehicle() == -10L){";
+                            s += "vehicle = Vehicles.getVehicleForId(player.getDraggedItem().getWurmId());}";
+                            s += "else {vehicle = Vehicles.getVehicleForId(player.getVehicle());}";
+                            s += "$1 = vehicle; $_ = $proceed($$);";
+                            m.replace("{ " + s + " }");
+                        }
+                    }
+                }
+        );
     }
 
-    private void boatInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode, CannotCompileException, NotFoundException {
-        if (!optionSwitches.get(5))
+    @SuppressWarnings("ConstantConditions")
+    private void menuAddLoadUnload() throws BadBytecode, CannotCompileException, NotFoundException {
+        int BOAT_IN_CART = 5;
+        int LOAD_INTO_DRAGGED = 4;
+        if (!optionSwitches[BOAT_IN_CART] && !optionSwitches[LOAD_INTO_DRAGGED])
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
         String replaceByteResult;
 
-        /*
-        List toReturn = new LinkedList();
-        if (!target.getTemplate().isTransportable() || !target.getRealTemplate().isTransportable())
-            return toReturn;
-        if (player.getVehicle() == -10L & player.getDraggedItem().getWurmId() == -10L)
-            return toReturn;
-        com.wurmonline.server.behaviours.Vehicle vehicle;
-        if (player.getVehicle() != -10)
-            vehicle = Vehicles.getVehicleForId(player.getVehicle());
-        if (player.getDraggedItem().getWurmId() != -10L)
-            vehicle = Vehicles.getVehicleForId(player.getDraggedItem().getWurmId());
-        com.wurmonline.server.items.Item vehicleItem = Items.getItem(vehicle.getWurmid());
-        if (vehicle != null && !vehicle.creature && !vehicle.isChair() &&
-                (MethodsItems.mayUseInventoryOfVehicle(player, vehicleItem) || vehicleItem.getLockId() == -10L || Items.isItemDragged(vehicleItem))) {
-            toReturn.add(Actions.actionEntrys[605]);
-            if (target.getTopParent() != target.getWurmId())
-                toReturn.add(Actions.actionEntrys[606]);
-        }
-        */
-        // Creature player, Item target
-        String boatAndDrag = "List toReturn = new LinkedList();";
-        boatAndDrag = boatAndDrag.concat("if (!$2.getTemplate().isTransportable() || !$2.getRealTemplate().isTransportable()){return toReturn;}");
-        boatAndDrag = boatAndDrag.concat("if ($1.getVehicle() == -10L & $1.getDraggedItem().getWurmId() == -10L){return toReturn;}");
-        boatAndDrag = boatAndDrag.concat("com.wurmonline.server.behaviours.Vehicle vehicle;");
-        boatAndDrag = boatAndDrag.concat("if ($1.getVehicle() != -10){vehicle = Vehicles.getVehicleForId($1.getVehicle());}");
-        boatAndDrag = boatAndDrag.concat("if ($1.getDraggedItem().getWurmId() != -10L){vehicle = Vehicles.getVehicleForId($1.getDraggedItem().getWurmId());}");
-        boatAndDrag = boatAndDrag.concat("com.wurmonline.server.items.Item vehicleItem = Items.getItem(vehicle.getWurmid());");
-        boatAndDrag = boatAndDrag.concat("if (vehicle != null && !vehicle.creature && !vehicle.isChair() && ");
-        boatAndDrag = boatAndDrag.concat("(MethodsItems.mayUseInventoryOfVehicle($1, vehicleItem) || vehicleItem.getLockId() == -10L || Items.isItemDragged(vehicleItem))) {");
-        boatAndDrag = boatAndDrag.concat("toReturn.add(Actions.actionEntrys[605]);");
-        boatAndDrag = boatAndDrag.concat("if ($2.getTopParent() != $2.getWurmId()){toReturn.add(Actions.actionEntrys[606]);}");
-        boatAndDrag = boatAndDrag.concat("}return toReturn;");
+        String boatAndDrag = "";
+        boatAndDrag += "List toReturn = new LinkedList();";
+        boatAndDrag += "if (!target.getTemplate().isTransportable() && !target.isBoat() && !target.isUnfinished()) {return toReturn;}";
+        boatAndDrag += "com.wurmonline.server.behaviours.Vehicle vehicle = Vehicles.getVehicleForId(player.getVehicle());";
+        boatAndDrag += "if (vehicle == null || vehicle.creature || vehicle.isChair()) {return toReturn;}";
 
+        if (optionSwitches[BOAT_IN_CART] && optionSwitches[LOAD_INTO_DRAGGED]) {
+            boatAndDrag += "com.wurmonline.server.items.Item vehicleItem = Items.getItem(player.getVehicle());";
+            boatAndDrag += "if (vehicleItem == null){vehicleItem = Items.getItem(player.getDraggedItem().getWurmId());}";
+        }
+        if (optionSwitches[BOAT_IN_CART] && !optionSwitches[LOAD_INTO_DRAGGED]) {
+            boatAndDrag += "com.wurmonline.server.items.Item vehicleItem = Items.getItem(player.getVehicle());";
+        }
+        if (!optionSwitches[BOAT_IN_CART] && optionSwitches[LOAD_INTO_DRAGGED]) {
+            boatAndDrag += "com.wurmonline.server.items.Item vehicleItem = Items.getItem(player.getDraggedItem().getWurmId());";
+            boatAndDrag += "if (target.isBoat() && vehicleItem.getTemplateId() != 853) {return toReturn;}";
+            boatAndDrag += "if (target.isUnfinished() && vehicleItem.getTemplateId() == 853) {";
+            boatAndDrag += "com.wurmonline.server.items.ItemTemplate template = target.getRealTemplate();";
+            boatAndDrag += "if (template == null || !template.isBoat()) {return toReturn;}";
+        }
+        boatAndDrag += "if (MethodsItems.mayUseInventoryOfVehicle(player, vehicleItem) || vehicleItem.getLockId() == -10L || Items.isItemDragged(vehicleItem)) {";
+        boatAndDrag += "toReturn.add(Actions.actionEntrys[605]);if (target.getTopParent() != target.getWurmId()){toReturn.add(Actions.actionEntrys[606]);}}";
+        boatAndDrag += "return toReturn;";
         CtMethod cmGetLoadUnloadActions = ctcCargoTransportationMethods.getMethod("getLoadUnloadActions", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Ljava/util/List;");
         cmGetLoadUnloadActions.setBody("{ " + boatAndDrag + " }");
 
@@ -428,7 +453,6 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
                             }
                         }
 
-        //</editor-fold>
         setGetLoadUnloadActions(cfCargoTransportationMethods, "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Ljava/util/List;",
                 "getLoadUnloadActions");
         jbt = new JDBByteCode();
@@ -457,10 +481,12 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         logger.log(Level.INFO, replaceByteResult);
         getLoadUnloadActionsMInfo.rebuildStackMapIf6(pool, cfCargoTransportationMethods);
         */
+        //</editor-fold>
     }
 
-    private void useBedInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
-        if (!optionSwitches.get(6))
+    private void useBedInCartBytecode() throws BadBytecode {
+        int USE_BED_IN_CART = 6;
+        if (!optionSwitches[USE_BED_IN_CART])
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
@@ -805,8 +831,9 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         mayUseBedMInfo.rebuildStackMapIf6(pool, cfItem);
     }
 
-    private void useMagicChestInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
-        if (!optionSwitches.get(7))
+    private void useMagicChestInCartBytecode() throws BadBytecode {
+        int USE_MAGIC_CHEST_IN_CART = 7;
+        if (!optionSwitches[USE_MAGIC_CHEST_IN_CART])
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
@@ -832,8 +859,9 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         logger.log(Level.INFO, replaceByteResult);
     }
 
-    private void useForgeInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode, NotFoundException, CannotCompileException {
-        if (!optionSwitches.get(8))
+    private void useForgeInCartBytecode() throws BadBytecode, NotFoundException, CannotCompileException {
+        int USE_FORGE_IN_CART = 8;
+        if (!optionSwitches[USE_FORGE_IN_CART])
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
@@ -896,7 +924,7 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
 
         // Change targetIsOnFireCheck() so it always returns false.
         CtMethod ctmTargetIsOnFireCheck = ctcCargoTransportationMethods.getDeclaredMethod("targetIsOnFireCheck");
-        ctmTargetIsOnFireCheck.setBody("{return false;}");
+        ctmTargetIsOnFireCheck.setBody("return false;");
 
         // Alter loadCargo() of cargoTransportationMethods.class to destory fire effect on furnace load.
         CtMethod ctmLoadCargo = ctcCargoTransportationMethods.getMethod("loadCargo",
@@ -938,8 +966,9 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         ctmUnloadCargo.insertAt(1312, "{ " + s + " }");
     }
 
-    private void craftWithinCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
-        if (!optionSwitches.get(9))
+    private void craftWithinCartBytecode() throws BadBytecode {
+        int CRAFT_WITHIN_CART = 9;
+        if (!optionSwitches[CRAFT_WITHIN_CART])
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
@@ -987,8 +1016,9 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         addCreationWindowOptionMInfo.rebuildStackMapIf6(pool, cfItemBehaviour);
     }
 
-    private void useAltarInCartBytecode(ArrayList<Boolean> optionSwitches) throws BadBytecode {
-        if (!optionSwitches.get(10))
+    private void useAltarInCartBytecode() throws BadBytecode {
+        int USE_ALTAR_IN_CART = 11;
+        if (!optionSwitches[USE_ALTAR_IN_CART])
             return;
         JDBByteCode jbt;
         JDBByteCode jbt1;
@@ -1140,9 +1170,10 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
     //</editor-fold>
 
     //<editor-fold desc="Reflection methods section.">
-    private int useBedReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
+    private int useBedReflection() throws IllegalAccessException, NoSuchFieldException {
         int bedCnt = 0;
-        if (!optionSwitches.get(0))
+        int USE_BED_IN_CART = 6;
+        if (!optionSwitches[USE_BED_IN_CART])
             return bedCnt;
         Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
                 ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
@@ -1159,9 +1190,10 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         return bedCnt;
     }
 
-    private int boatInCartReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
+    private int boatInCartReflection() throws IllegalAccessException, NoSuchFieldException {
         int boatInCartCnt = 0;
-        if (!optionSwitches.get(1))
+        int BOAT_IN_CART = 5;
+        if (!optionSwitches[BOAT_IN_CART])
             return boatInCartCnt;
         Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
                 ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
@@ -1176,9 +1208,10 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         return boatInCartCnt;
     }
 
-    private int loadAltarReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
+    private int loadAltarReflection() throws IllegalAccessException, NoSuchFieldException {
         int altarCnt = 0;
-        if (!optionSwitches.get(2))
+        int LOAD_ALTAR = 10;
+        if (!optionSwitches[LOAD_ALTAR])
             return altarCnt;
         Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
             ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
@@ -1195,9 +1228,10 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         return altarCnt;
     }
 
-    private int loadOtherReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
+    private int loadOtherReflection() throws IllegalAccessException, NoSuchFieldException {
         int otherCnt = 0;
-        if (!optionSwitches.get(3))
+        int LOAD_OTHER = 12;
+        if (!optionSwitches[LOAD_OTHER])
             return otherCnt;
         Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
                 ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
@@ -1212,9 +1246,10 @@ public class LoadingUnchainedMod implements WurmMod, Initable, Configurable, Ser
         return otherCnt;
     }
 
-    private int craftWithinCartReflection(ArrayList<Boolean> optionSwitches) throws IllegalAccessException, NoSuchFieldException {
+    private int craftWithinCartReflection() throws IllegalAccessException, NoSuchFieldException {
         int craftWithinCartCnt = 0;
-        if (!optionSwitches.get(4))
+        int CRAFT_WITHIN_CART = 9;
+        if (!optionSwitches[CRAFT_WITHIN_CART])
             return craftWithinCartCnt;
         Map<Integer, ItemTemplate> fieldTemplates = ReflectionUtil.getPrivateField(ItemTemplateFactory.class,
                 ReflectionUtil.getField(ItemTemplateFactory.class, "templates"));
