@@ -324,36 +324,24 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
         moveToItem.getCtMethod().instrument( new ExprEditor() {
             @Override
             public void edit(MethodCall methodCall) throws CannotCompileException {
-                if (Objects.equals("getTopParent", methodCall.getMethodName()) && methodCall.getLineNumber() == 2763 && moveItemsIntoBinWithinContainer) {
+                if (Objects.equals("getTopParent", methodCall.getMethodName()) && methodCall.getLineNumber() == 2758 && moveItemsIntoBinWithinContainer) {
+                    logger.log(Level.FINE, moveToItem.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = target.getWurmId();");
-                    logger.log(Level.FINE, "removed ground required for bulk bin in Item.class, moveToItem(), line: " + methodCall.getLineNumber());
                     moveItemsIntoBinWithinContainerSuccesses[0] = 1;
-                } else if (Objects.equals("getTemplateId", methodCall.getMethodName()) && methodCall.getLineNumber() == 2150 && useMagicChestInCart) {
+                } else if (Objects.equals("getTemplateId", methodCall.getMethodName()) && methodCall.getLineNumber() == 2145 && useMagicChestInCart) {
+                    logger.log(Level.FINE, moveToItem.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = 1;");
-                    logger.log(Level.FINE, "Use large magic chest inside other containers Item.class, moveToItem(), line: " + methodCall.getLineNumber());
                     useMagicChestInCartSuccesses[0] = 1;
                 }
             }
         });
+        if (moveItemsIntoBinWithinContainer)
+            evaluateChangesArray(moveItemsIntoBinWithinContainerSuccesses, "moveItemsIntoBinWithinContainer");
 
-        if (moveItemsIntoBinWithinContainer){
-            boolean changesSuccessful = !Arrays.stream(moveItemsIntoBinWithinContainerSuccesses).anyMatch(value -> value == 0);
-            if (changesSuccessful) {
-                logger.log(Level.INFO, "moveItemsIntoBinWithinContainer option changes SUCCESSFUL");
-            } else {
-                logger.log(Level.INFO, "moveItemsIntoBinWithinContainer option changes FAILURE");
-                logger.log(Level.FINE, Arrays.toString(moveItemsIntoBinWithinContainerSuccesses));
-            }
-        }
-        if (useMagicChestInCart){
-            boolean changesSuccessful = !Arrays.stream(useMagicChestInCartSuccesses).anyMatch(value -> value == 0);
-            if (changesSuccessful) {
-                logger.log(Level.INFO, "useMagicChestInCart option changes SUCCESSFUL");
-            } else {
-                logger.log(Level.INFO, "useMagicChestInCart option changes FAILURE");
-                logger.log(Level.FINE, Arrays.toString(useMagicChestInCartSuccesses));
-            }
-        }
+        if (useMagicChestInCart)
+            evaluateChangesArray(useMagicChestInCartSuccesses, "useMagicChestInCart");
     }
 
     private void useCustomProximityBytecode() throws  NotFoundException, CannotCompileException, BadBytecode {
@@ -425,7 +413,7 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
         find.add(findPoolResult[0], findPoolResult[1]);
 
         find.addOpcode(Opcode.LCMP);
-        find.addOpcode(Opcode.IFEQ); find.add(46, 106); //Jump forward 11,882 (2E6A) lines.
+        find.addOpcode(Opcode.IFEQ); find.add(46, 194); //Jump forward 11,970 (2EC2) lines.
         find.addOpcode(Opcode.ALOAD_2);
 
         find.addOpcode(Opcode.INVOKEVIRTUAL);
@@ -451,7 +439,7 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
 
         replace.addOpcode(Opcode.LCMP);
         replace.addOpcode(Opcode.IFEQ);
-        replace.add(46, 106); //Jump forward 11,882 (2E6A) lines.
+        replace.add(46, 194); //Jump forward 11,970 (2EC2) lines.
         replace.addOpcode(Opcode.ALOAD_2);
 
         replace.addOpcode(Opcode.INVOKEVIRTUAL);
@@ -465,20 +453,20 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
         boolean findResult = findReplaceCodeIterator(actionItemBehaviour.getCodeIterator(), find, replace);
         loadIntoDraggedSuccesses[0] = findResult ? 1 : 0;
 
-        actionItemBehaviour.getCtMethod().instrument(new ExprEditor() {
+            actionItemBehaviour.getCtMethod().instrument(new ExprEditor() {
             @Override
             public void edit(MethodCall methodCall) throws CannotCompileException {
                 if (Objects.equals(methodCall.getMethodName(), "getVehicleIdDragOrEmbark")){
+                    logger.log(Level.FINE, actionItemBehaviour.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.getVehicleIdFromDragEmbark(performer);");
                     loadIntoDraggedSuccesses[1] = 1;
-                } else if (Objects.equals("getTemplateId", methodCall.getMethodName()) && methodCall.getLineNumber() == 4143 &&
+                } else if (Objects.equals("getTemplateId", methodCall.getMethodName()) && methodCall.getLineNumber() == 4152 &&
                         loadIntoTrashbin){
+                    logger.log(Level.FINE, actionItemBehaviour.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.getTemplateIdHook(target);");
-                    logger.log(Level.FINE, "loadIntoTrashbin.... hook installed for ItemBehaviour.class, " +
-                            "Action(Action,Creature,Item,short,float) at " + methodCall.getLineNumber());
                     loadIntoTrashbinSuccesses[0] = 1;
-                } else if (Objects.equals("isDraggable", methodCall.getMethodName()) && methodCall.getLineNumber() == 4130){
-                    methodCall.replace("{ com.joedobo27.loadingunchained.LoadingUnchainedMod.printDataHook(target, performer); $_ = $proceed(); }");
                 }
             }
         });
@@ -487,25 +475,33 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
             @Override
             public void edit(MethodCall methodCall) throws CannotCompileException {
                 if (Objects.equals(methodCall.getMethodName(), "getVehicle")) {
+                    logger.log(Level.FINE, loadCargo.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.getVehicleIdFromDragEmbark(performer);");
                     loadIntoDraggedSuccesses[2] = 1;
                 }
                 else if (Objects.equals(methodCall.getMethodName(), "performerIsNotOnATransportVehicle")) {
+                    logger.log(Level.FINE, loadCargo.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.loadIntoContainerInvalid(vehicle);");
                     loadIntoDraggedSuccesses[3] = 1;
                 }
             }
         });
-
-        CtMethod ctmLoadShip = cargoTransportationMethods.getCtClass().getMethod("loadShip", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z");
-        ctmLoadShip.instrument( new ExprEditor() {
+        JAssistMethodData loadShip = new JAssistMethodData(cargoTransportationMethods,
+                "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;F)Z", "loadShip");
+        loadShip.getCtMethod().instrument( new ExprEditor() {
             @Override
             public void edit(MethodCall methodCall) throws CannotCompileException {
                 if (Objects.equals(methodCall.getMethodName(), "getVehicle")) {
+                    logger.log(Level.FINE, loadShip.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.getVehicleIdFromDragEmbark(performer);");
                     loadIntoDraggedSuccesses[4] = 1;
                 }
                 else if (Objects.equals(methodCall.getMethodName(), "performerIsNotOnATransportVehicle")) {
+                    logger.log(Level.FINE, loadShip.getCtMethod().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.loadIntoContainerInvalid(vehicle);");
                     loadIntoDraggedSuccesses[5] = 1;
                 }
@@ -522,34 +518,21 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
                 "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/behaviours/Seat;)Z");
         ctmPerformerIsNotSeatedOnAVehicle.setBody("return false;");
 
-        boolean changesSuccessful = !Arrays.stream(loadIntoDraggedSuccesses).anyMatch(value -> value == 0);
-        if (changesSuccessful) {
-            logger.log(Level.INFO, "loadIntoDragged option changes SUCCESSFUL");
-        } else {
-            logger.log(Level.INFO, "loadIntoDragged option changes FAILURE");
-            logger.log(Level.FINE, Arrays.toString(loadIntoDraggedSuccesses));
-        }
-        if (loadIntoTrashbin) {
-            changesSuccessful = !Arrays.stream(loadIntoTrashbinSuccesses).anyMatch(value -> value == 0);
-            if (changesSuccessful) {
-                logger.log(Level.INFO, "loadIntoTrashbin option changes SUCCESSFUL");
-            } else {
-                logger.log(Level.INFO, "loadIntoTrashbin option changes FAILURE");
-                logger.log(Level.FINE, Arrays.toString(loadIntoTrashbinSuccesses));
-            }
-        }
+        evaluateChangesArray(loadIntoDraggedSuccesses, "loadIntoDragged");
+        evaluateChangesArray(loadIntoTrashbinSuccesses, "loadIntoTrashbin");
     }
 
     @SuppressWarnings("ConstantConditions")
     private void menuAddLoadUnloadBytecode() throws NotFoundException, CannotCompileException {
         if (!boatInCart && !loadIntoDragged)
             return;
-        pool.get("com.wurmonline.server.behaviours.ItemBehaviour").instrument(new ExprEditor() {
+        itemBehaviour.getCtClass().instrument(new ExprEditor() {
             @Override
-            public void edit(MethodCall m) throws CannotCompileException {
-                if (Objects.equals(cargoTransportationMethods.getCtClass().getName(), m.getClassName()) && Objects.equals("getLoadUnloadActions", m.getMethodName())) {
-                    m.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.getLoadUnloadActionsHook($1, $2);");
-                    logger.log(Level.FINE, "replaced getLoadUnloadActionsHook() at " + m.getLineNumber());
+            public void edit(MethodCall methodCall) throws CannotCompileException {
+                if (Objects.equals(cargoTransportationMethods.getCtClass().getName(), methodCall.getClassName()) && Objects.equals("getLoadUnloadActions", methodCall.getMethodName())) {
+                    logger.log(Level.FINE, itemBehaviour.getCtClass().getName() + " method,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
+                    methodCall.replace("$_ = com.joedobo27.loadingunchained.LoadingUnchainedMod.getLoadUnloadActionsHook($1, $2);");
                 }
             }
         });
@@ -564,25 +547,18 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
             @Override
             public void edit(MethodCall methodCall) throws CannotCompileException {
                 if (Objects.equals("strengthCheck", methodCall.getMethodName())) {
+                    logger.log(Level.FINE, cargoTransportationMethods.getCtClass().getName() + " class,  edit call to " +
+                            methodCall.getMethodName() + " at index " + methodCall.getLineNumber());
                     methodCall.replace("{ $2 = " + minimumStrength + "; $_ = $proceed($$); }");
                     minimumStrengthsuccesses[0] = 1;
-                    logger.log(Level.FINE, "All of strengthCheck() in cargoTransportationMethods altered: " + methodCall.getLineNumber());
                 }
             }
         });
-        boolean changesSuccessful = !Arrays.stream(minimumStrengthsuccesses).anyMatch(value -> value == 0);
-        if (changesSuccessful) {
-            logger.log(Level.INFO, "minimumStrength option changes SUCCESSFUL");
-        } else {
-            logger.log(Level.INFO, "minimumStrength option changes FAILURE");
-            logger.log(Level.FINE, Arrays.toString(minimumStrengthsuccesses));
-        }
+        evaluateChangesArray(minimumStrengthsuccesses, "minimumStrength");
     }
-
     //</editor-fold>
 
     //<editor-fold desc="Reflection methods section.">
-
     private int boatInCartReflection() throws IllegalAccessException, NoSuchFieldException {
         int boatInCartCnt = 0;
         if (!boatInCart)
@@ -659,5 +635,15 @@ public class LoadingUnchainedMod implements WurmServerMod, Initable, Configurabl
         logger.log(Level.INFO, "trashBin altered to facilitate loading stuff into it.");
     }
     //</editor-fold>
+
+    private static void evaluateChangesArray(int[] ints, String option) {
+        boolean changesSuccessful = !Arrays.stream(ints).anyMatch(value -> value == 0);
+        if (changesSuccessful) {
+            logger.log(Level.INFO, option + " option changes SUCCESSFUL");
+        } else {
+            logger.log(Level.INFO, option + " option changes FAILURE");
+            logger.log(Level.FINE, Arrays.toString(ints));
+        }
+    }
 }
 
